@@ -1,6 +1,6 @@
 from numpy import pi
 
-from manifold.topology import Manifold, Map, Chart, Interval
+from manifold.topology import Manifold, Map, Chart, Interval, Interval2D
 from manifold._manifolds import Base
 from manifold.maps import identity
 
@@ -21,5 +21,20 @@ class Circle(Base):
         ]
     )
 
-    def __init__(self, embedding):
-        super().__init__(embedding)
+    def __init__(self, embedding, n_sample_points=10):
+        super().__init__(embedding, n_sample_points=n_sample_points)
+
+
+class Sphere(Base):
+    name = 'S2'
+
+    manifold = Manifold(
+        M = Interval2D(
+            Interval('M_1', 0, pi),
+            Interval('M_2', 0, 2*pi),
+        ),
+        charts = []
+    )
+
+    def __init__(self, embedding, n_sample_points=10):
+        super().__init__(embedding, n_sample_points=n_sample_points)

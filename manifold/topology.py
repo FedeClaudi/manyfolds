@@ -1,8 +1,25 @@
+import numpy as np
 from dataclasses import dataclass
+from sympy import Function
 
 @dataclass
 class Point:
     coordinates: tuple
+
+    def __getitem__(self, i):
+        return self.coordinates[i]
+
+    def __len__(self):
+        return len(self.coordinats)
+
+    @property
+    def d(self):
+        return len(self)
+
+    @property
+    def acord(self):
+        ''' coordinates as arrays '''
+        return np.array(self.coordinates)
 
 @dataclass
 class Interval:
@@ -18,10 +35,16 @@ class Interval:
     def r(self):
         return self.right
 
+
+@dataclass
+class Interval2D:
+    int1: Interval
+    int2: Interval
+
+@dataclass
 class Map:
-    def __init__(self, name, expression):
-        self.name = name
-        self.expression = expression
+    name: str
+    f: Function
 
 @dataclass
 class Chart:

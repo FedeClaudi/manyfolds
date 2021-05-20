@@ -1,2 +1,1 @@
-def identity(x):
-    return x
+from sympy import Id as identity
