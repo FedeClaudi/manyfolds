@@ -1,1 +1,6 @@
-from sympy import Id as identity
+def identity(x):
+    return x
+
+
+def constant(k, x):
+    return k
