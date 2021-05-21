@@ -79,3 +79,15 @@ def plane_to_r3_flat(p0, p1):
 @to_coordinates2D
 def plane_to_r3(p0, p1):
     return (p0 - 0.5, sin(p1) - 0.5, cos(2 * (p0 + p1 - 1)))
+
+
+# ----------------------------------- torus ---------------------------------- #
+@to_coordinates2D
+def torus_to_r3(p0, p1):
+    R = 0.75  # torus center -> tube center
+    r = 0.5  # tubre radius
+    return (
+        (R + r * cos(p0)) * cos(p1),
+        (R + r * cos(p0)) * sin(p1),
+        r * sin(p0),
+    )

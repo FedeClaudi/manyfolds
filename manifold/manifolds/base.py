@@ -136,7 +136,7 @@ class BaseManifold:
             x_range = [x_range] * self.d
 
         for point in self.points:
-            for fn in point.base_functions[::-1]:
+            for fn in point.base_functions:
                 # plot the function
                 fn.embedd(x_range=x_range[fn.dim_idx])
                 ax.plot(
