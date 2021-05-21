@@ -16,7 +16,7 @@ class Trace:
 
 
 class RNN:
-    dt = 0.01
+    dt = 0.001
     sigma = np.tanh
 
     traces = []  # stores results of runnning RNN on initial conditions
@@ -31,7 +31,7 @@ class RNN:
         self.manifold = manifold
         self.n_units = n_units
 
-    def build_W(self):
+    def build_W(self, k=10, scale=1):
         """
             For each sample point on the manifold we have 
             h_dot = W sigma(h)
@@ -45,21 +45,33 @@ class RNN:
             This can be used to find W such that hdot is in the tangent space
             at each point.
         """
+        # sample points
+        points = self.manifold.sample(n=k + 2, fill=True)[1:-1]
+
         # get all the vectors
-        hdot = []
-        h = []
-        for n, point in enumerate(self.manifold.points):
-            hdot.append(point.base_functions[0].tangent_vector)
-            h.append(self.sigma(point.embedded))
+        v = []  # tangent vectors
+        s = []  # states through non-linearity
+        for n, point in enumerate(points):
+            v.append(point.base_functions[0].tangent_vector * scale)
+            s.append(self.sigma(point.embedded))
 
-        Hdot = np.vstack(hdot).T
-        H = np.vstack(h).T
+        V = np.linalg.pinv(np.vstack(v).T)
+        S = np.linalg.pinv(np.vstack(s).T)
+        """
+            Note:
+                from the derivation we get:
+                    Hdot = W * H
+                but to solve for W we need to have:
+                    AW = B
+                so we multiply things around to get
+                    H^-1 * W = Hdot^-1
+                and solve for W
+        """
 
-        # get W: W = hdot h^-1
-        self.W = Hdot.dot(np.linalg.pinv(H))
-        logger.debug(
-            f"Rnn W:\n{self.W}\nreconstruction error: {np.linalg.norm(Hdot - self.W@H):.4f}"
-        )
+        # get W
+        self.W = np.linalg.lstsq(V, S, rcond=None)[0]
+        # self.W = np.linalg.solve(V, S)
+        logger.debug(f"RNN connection matrix:\n {self.W}")
 
     def step(self, h):
         h = np.array(h)

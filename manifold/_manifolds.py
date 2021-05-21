@@ -53,29 +53,30 @@ class Manifold1D:
                 return chart
         raise ValueError(f"No chart contains the point: {point}")
 
-    def project_with_charts(self):
+    def project_with_charts(self, points=None):
         """
             For each point it projects the point to the image
             of a chart map for a chart containing the point
         """
-        for point in self.points:
+        points = points or self.points
+
+        for point in points:
             chart = self.get_chart_from_point(point)
             point.projected = chart.x(point)
 
-    def get_base_functions(self):
+    def get_base_functions(self, points=None):
         """
             For each point in the sampled manifold
             define a function I -> x(u) in the image of 
             a chart containint the point
         """
-        for point in self.points:
+        points = points or self.points
+        for point in points:
             point.base_functions = [
                 BaseFunction(point, partial(constant, point.coordinates[0]))
             ]
 
-    def sample(
-        self, n=None,
-    ):
+    def sample(self, n=None, fill=False):
         """
             Samples N points from the manifold's interval ensuring that they are not too close
         """
@@ -84,7 +85,19 @@ class Manifold1D:
         logger.debug(f"Sampling manifold points with n={n}")
 
         # sample points
-        return [Point((k,), self.embedding) for k in self.M.sample(n)]
+        points = [Point((k,), self.embedding) for k in self.M.sample(n)]
+
+        # fill all data for points
+        if fill:
+            # embedd:
+            for point in points:
+                point.embedded = self.embedding(point)
+
+            # get base functions
+            self.project_with_charts(points)
+            self.get_base_functions(points)
+
+        return points
 
     def embedd(self):
         """

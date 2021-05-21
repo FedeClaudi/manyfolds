@@ -10,15 +10,17 @@ from numpy import sin, cos
 MANIFOLD = "line"
 
 if MANIFOLD == "line":
-    # def embedding(p):
-    #     if not isinstance(p, float):
-    #         p = p[0]
-    #     return (sin(8*p), cos(4*p), 1)
-
+    # ? curved line embedding
     def embedding(p):
         if not isinstance(p, float):
             p = p[0]
-        return (p, -p, 2 * p)
+        return (sin(2 * p), sin(p), -cos(p))
+
+    # ? straight line embedding
+    # def embedding(p):
+    #     if not isinstance(p, float):
+    #         p = p[0]
+    #     return (p, -p, 2 * p)
 
     M = Line(embedding, n_sample_points=3)
 else:
@@ -26,7 +28,7 @@ else:
     def embedding(p):
         if not isinstance(p, float):
             p = p[0]
-        return (sin(p), cos(p), sin(p) + cos(2 * p))
+        return (sin(p) / 2, cos(p) / 2, 1)
 
     M = Circle(embedding, n_sample_points=3)
 
@@ -36,8 +38,8 @@ M.get_base_functions()
 
 # create RNN
 rnn = RNN(M, n_units=3)
-rnn.build_W()
-rnn.run_points(n_seconds=500)
+rnn.build_W(k=40, scale=10)
+rnn.run_points(n_seconds=10)
 
 # visualize in embedding
 ax = M.visualize_embedded()
