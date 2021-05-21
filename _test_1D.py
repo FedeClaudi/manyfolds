@@ -1,40 +1,20 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from manifold.manifolds import Line, Circle
+from manifold import embeddings, Line, Circle
 from manifold.rnn import RNN
 from manifold.maths import angle_between, min_distance_from_point
 
-from numpy import sin, cos
 
 MANIFOLD = "line"
 
 if MANIFOLD == "line":
-    # ? curved line embedding
-    def embedding(p):
-        if not isinstance(p, float):
-            p = p[0]
-        return (sin(2 * p), sin(p), -cos(p))
-
-    # ? straight line embedding
-    # def embedding(p):
-    #     if not isinstance(p, float):
-    #         p = p[0]
-    #     return (p, -p, 2 * p)
-
-    M = Line(embedding, n_sample_points=3)
+    M = Line(embeddings.line_to_r3, n_sample_points=3)
 else:
-
-    def embedding(p):
-        if not isinstance(p, float):
-            p = p[0]
-        return (sin(p) / 2, cos(p) / 2, 1)
-
-    M = Circle(embedding, n_sample_points=3)
+    M = Circle(embeddings.circle_to_r3_flat, n_sample_points=3)
 
 # create base functions at each point in the manfiold
 M.get_base_functions()
-
 
 # create RNN
 rnn = RNN(M, n_units=3)

@@ -2,18 +2,25 @@ import matplotlib.pyplot as plt
 from loguru import logger
 from functools import partial
 import numpy as np
+from numpy import pi
 
 from myterial import blue_grey
 
-from manifold.topology import Point
+from manifold.topology import Point, Manifold, Map, Chart, Interval
 from manifold.maps import constant
 from manifold.base_function import BaseFunction
+from manifold.maps import identity
+
 
 color = "#c3c3db"
 grey = [0.6, 0.6, 0.6]
 
 
 class Manifold1D:
+    """
+        Base class for 1D manifolds
+    """
+
     d = 1
 
     def __init__(self, embedding, n_sample_points=10):
@@ -171,3 +178,36 @@ class Manifold1D:
                     lw=5,
                     color=blue_grey,
                 )
+
+
+class Circle(Manifold1D):
+    name = "S_1"
+    manifold = Manifold(
+        M=Interval("M", 0, 2 * pi),
+        charts=[
+            Chart(
+                Interval("U_1", 0, 1.5 * pi), Map("x_1", identity, identity),
+            ),
+            Chart(
+                Interval("U_2", 0.5 * pi, 2 * pi),
+                Map("x_2", identity, identity),
+            ),
+        ],
+    )
+
+    def __init__(self, embedding, n_sample_points=10):
+        super().__init__(embedding, n_sample_points=n_sample_points)
+
+
+class Line(Manifold1D):
+    name = "R_1"
+    manifold = Manifold(
+        M=Interval("M", 0, 1),
+        charts=[
+            Chart(Interval("U_1", 0, 0.7), Map("x_1", identity, identity),),
+            Chart(Interval("U_2", 0.3, 1), Map("x_2", identity, identity),),
+        ],
+    )
+
+    def __init__(self, embedding, n_sample_points=10):
+        super().__init__(embedding, n_sample_points=n_sample_points)
