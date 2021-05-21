@@ -85,6 +85,38 @@ class Manifold2D(BaseManifold):
             ]
 
 
+class Plane(Manifold2D):
+    name = "R2"
+    manifold = Manifold(
+        M=[Interval("M_1", 0, 1), Interval("M_2", 0, 1)],
+        charts=[
+            Chart(
+                1,
+                [Interval("U_1_1", 0, 0.6), Interval("U_1_2", 0, 0.6)],
+                Map("x_1", identity, identity),
+            ),
+            Chart(
+                2,
+                [Interval("U_2_1", 0.4, 1), Interval("U_2_2", 0, 0.6)],
+                Map("x_2", identity, identity),
+            ),
+            Chart(
+                3,
+                [Interval("U_3_1", 0, 0.6), Interval("U_3_2", 0.4, 1)],
+                Map("x_3", identity, identity),
+            ),
+            Chart(
+                4,
+                [Interval("U_4_1", 0.4, 1), Interval("U_4_2", 0.4, 1)],
+                Map("x_4", identity, identity),
+            ),
+        ],
+    )
+
+    def __init__(self, embedding, n_sample_points=10):
+        super().__init__(embedding, n_sample_points=n_sample_points)
+
+
 class Sphere(Manifold2D):
     name = "S2"
     manifold = Manifold(
@@ -101,12 +133,12 @@ class Sphere(Manifold2D):
             Chart(
                 2,
                 [Interval("U_3_1", 0.3, pi), Interval("U_3_2", 0, 1.5 * pi)],
-                Map("x_1", identity, identity),
+                Map("x_2", identity, identity),
             ),
             Chart(
                 3,
                 [Interval("U_2_1", 0.3, pi), Interval("U_2_2", 0.5, 2 * pi)],
-                Map("x_2", identity, identity),
+                Map("x_3", identity, identity),
             ),
             Chart(
                 4,
@@ -114,7 +146,7 @@ class Sphere(Manifold2D):
                     Interval("U_4_1", 0, 0.7 * pi),
                     Interval("U_4_2", 0.5, 2 * pi),
                 ],
-                Map("x_2", identity, identity),
+                Map("x_4", identity, identity),
             ),
         ],
     )

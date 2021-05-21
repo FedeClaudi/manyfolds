@@ -64,7 +64,18 @@ def circle_to_r3(p):
     return (sin(p), cos(p) / 2, sin(p))
 
 
-# ---------------------------------- spehre ---------------------------------- #
+# ---------------------------------- sphere ---------------------------------- #
 @to_coordinates2D
 def sphere_to_r3(p0, p1):
     return (sin(p0) * cos(p1), sin(p0) * sin(p1), cos(p0))
+
+
+# ----------------------------------- plane ---------------------------------- #
+@to_coordinates2D
+def plane_to_r3_flat(p0, p1):
+    return (p0 - 0.5, p1 - 0.5, p0 + p1 - 1)
+
+
+@to_coordinates2D
+def plane_to_r3(p0, p1):
+    return (p0 - 0.5, sin(p1) - 0.5, cos(2 * (p0 + p1 - 1)))

@@ -44,7 +44,7 @@ class BaseFunction:
             r if self.domain_interval.contains(r) else self.domain_interval.r,
         ).sample(n=N)
         logger.debug(
-            f"Embedding base function for {self.point} with domain: {domain[0]:2f} -> {domain[-1]:.2f}"
+            f"Embedding base function for point @ {[round(x,2) for x in self.point.coordinates]} with chart: {self.point.chart.idx} with domain: {domain[0]:2f} -> {domain[-1]:.2f}"
         )
 
         # embedd

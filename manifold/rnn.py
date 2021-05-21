@@ -47,6 +47,9 @@ class RNN:
             This can be used to find W such that hdot is in the tangent space
             at each point.
         """
+        if self.manifold.d > 1:
+            logger.warning("RNN -build W method is not adapted for d>1")
+
         # sample points
         points = self.manifold.sample(n=k + 2, fill=True)[1:-1]
 

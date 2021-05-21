@@ -1,8 +1,10 @@
 import numpy as np
 from loguru import logger
 
+from myterial import blue_grey, grey_dark, grey
+
 from manifold.topology import Point
-from manifold.visualize import blue_grey, grey_dark, grey, make_3D_ax
+from manifold.visualize import make_3D_ax
 
 
 class BaseManifold:
@@ -99,7 +101,7 @@ class BaseManifold:
 
         if self.d == 1:
             ax.plot(
-                self.embedded[:, 0],
+                self.embedded[0, 0],
                 self.embedded[:, 1],
                 self.embedded[:, 2],
                 lw=1.5,
@@ -144,6 +146,25 @@ class BaseManifold:
                     lw=5,
                     color=grey_dark,
                 )
+                # ax.scatter(
+                #     fn.embedded[0, 0],
+                #     fn.embedded[0, 1],
+                #     fn.embedded[0, 2],
+                #     s=100,
+                #     color='m',
+                # )
+                # ax.scatter(
+                #     *fn.point.embedded,
+                #     s=100,
+                #     color='k',
+                # )
+                # ax.scatter(
+                #     fn.embedded[-1, 0],
+                #     fn.embedded[-1, 1],
+                #     fn.embedded[-1, 2],
+                #     s=100,
+                #     color='r',
+                # )
 
                 # plot the scaled tangent vector at the point
                 vector = fn.tangent_vector
@@ -155,8 +176,6 @@ class BaseManifold:
                     lw=4,
                     color=blue_grey,
                 )
-
-                break
 
     # ------------------------ to implement in subclasses ------------------------ #
     def project_with_charts(self, points=None):
