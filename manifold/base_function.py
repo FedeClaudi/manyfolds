@@ -20,7 +20,7 @@ class BaseFunction:
 
     embedded = None
 
-    def embedd(self, x_range=0.3):
+    def embedd(self, x_range=0.1):
         """
             Embeds the function's domain in embedding space
             using the inverse of the point's chart's map and the 

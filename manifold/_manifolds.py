@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from loguru import logger
 from functools import partial
+import numpy as np
 
 from myterial import blue_grey
 
@@ -16,11 +17,11 @@ class Manifold1D:
     d = 1
 
     def __init__(self, embedding, n_sample_points=10):
-        self.n_sample_points = n_sample_points + 1
+        self.n_sample_points = n_sample_points + 2
         self.embedding = embedding
 
         # sample points in the manifold
-        self.points = self.sample()[:-1]
+        self.points = self.sample()[1:-1]
 
         # project with charts
         self.project_with_charts()
@@ -100,8 +101,12 @@ class Manifold1D:
             for p in self.sample(n=100)
         ]
 
+        self.embedded = np.vstack(
+            [p.coordinates for p in self.embedded_points_vis]
+        )
+
     def visualize_embedded(self):
-        plt.figure()
+        plt.figure(figsize=(9, 9))
         ax = plt.axes(projection="3d")
 
         for p in self.points:
@@ -115,9 +120,9 @@ class Manifold1D:
             )
 
         ax.plot(
-            [p.coordinates[0] for p in self.embedded_points_vis],
-            [p.coordinates[1] for p in self.embedded_points_vis],
-            [p.coordinates[2] for p in self.embedded_points_vis],
+            self.embedded[:, 0],
+            self.embedded[:, 1],
+            self.embedded[:, 2],
             lw=1.5,
             color=grey,
             zorder=-1,
@@ -125,7 +130,7 @@ class Manifold1D:
 
         return ax
 
-    def visualize_base_functions_at_point(self, ax, x_range=0.2):
+    def visualize_base_functions_at_point(self, ax, x_range=0.2, scale=100):
         """
             For a given point in the manifold it projects the base functions
             in the image of the points chart to the embedding. This is done by taking each 
@@ -145,11 +150,11 @@ class Manifold1D:
                 )
 
                 # plot the tangent vector at the point
-                vector = fn.tangent_vector * 50
+                vector = fn.tangent_vector * scale
                 ax.plot(
                     [fn.point.embedded[0], fn.point.embedded[0] + vector[0]],
                     [fn.point.embedded[1], fn.point.embedded[1] + vector[1]],
                     [fn.point.embedded[2], fn.point.embedded[2] + vector[2]],
-                    lw=2,
+                    lw=5,
                     color=blue_grey,
                 )
