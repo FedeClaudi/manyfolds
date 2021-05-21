@@ -2,6 +2,8 @@ import numpy as np
 from loguru import logger
 from dataclasses import dataclass
 
+from myterial import salmon
+
 from manifold.maths import min_distance_from_point
 
 
@@ -109,6 +111,6 @@ class RNN:
                 trace.trace[:, 0],
                 trace.trace[:, 1],
                 trace.trace[:, 2],
-                c="green",
-                lw=2,
+                c=salmon,
+                lw=1,
             )

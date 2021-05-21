@@ -17,6 +17,8 @@ class BaseFunction:
 
     point: Point
     f: Callable
+    domain_interval: Interval
+    dim_idx: int
 
     embedded = None
 
@@ -26,6 +28,11 @@ class BaseFunction:
             using the inverse of the point's chart's map and the 
             manifold embedding map
         """
+        N = 100  # number of samples over the domain
+        self.embedded_point_index = int(
+            N / 2
+        )  # index of the embedding point corresponding to the function's point
+
         # get domain of the function
         l, r = (
             self.point.coordinates[0] - x_range,
@@ -33,20 +40,29 @@ class BaseFunction:
         )
         domain = Interval(
             "domain",
-            l if self.point.chart.U.contains(l) else self.point.chart.U.l,
-            r if self.point.chart.U.contains(r) else self.point.chart.U.r,
-        ).sample(n=100)
+            l if self.domain_interval.contains(l) else self.domain_interval.l,
+            r if self.domain_interval.contains(r) else self.domain_interval.r,
+        ).sample(n=N)
         logger.debug(
             f"Embedding base function for {self.point} with domain: {domain[0]:2f} -> {domain[-1]:.2f}"
         )
 
-        self.embedded_point_index = 50  # index of the embedding point corresponding to the function's point
-
         # embedd
-        embedded = [
-            self.point.embedding_map(self.point.chart.x.inverse(x))
-            for x in domain
-        ]
+        if self.point.d == 1:
+            _fixed = np.ones(self.point.d)
+        else:
+            _fixed = (
+                np.ones(self.point.d)
+                * self.point.coordinates[1 - self.dim_idx]
+            )
+
+        embedded = []
+        for p in domain:
+            # one dimension is fixed and one varies
+            _point = _fixed.copy()
+            _point[self.dim_idx] = self.point.chart.x.inverse(p)
+
+            embedded.append(self.point.embedding_map(_point))
 
         # reshape data
         self.embedded = np.vstack(
@@ -66,5 +82,9 @@ class BaseFunction:
             self.embedd()
 
         derivative = np.diff(self.embedded.T)
+        if np.linalg.norm(derivative) == 0:
+            logger.warning(
+                f"Tangent vector for base function {self} is vanishing"
+            )
 
         return derivative[:, self.embedded_point_index].T

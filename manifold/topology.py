@@ -1,6 +1,6 @@
 import numpy as np
 from dataclasses import dataclass
-from typing import Callable
+from typing import Callable, Union
 
 
 @dataclass
@@ -12,7 +12,13 @@ class Point:
         return self.coordinates[i]
 
     def __len__(self):
-        return len(self.coordinats)
+        return len(self.coordinates)
+
+    def __eq__(self, other):
+        delta = np.linalg.norm(
+            np.array(self.coordinates) - np.array(other.coordinates)
+        )
+        return delta < 0.1
 
     @property
     def d(self):
@@ -52,8 +58,10 @@ class Interval:
         else:
             return False
 
-    def sample(self, n=10):
-        return list(np.linspace(self.l, self.r - 0.001, n))
+    def sample(self, n=10, l_offset=0, r_offset=0):
+        return list(
+            np.linspace(self.l + l_offset, self.r - r_offset - 0.001, n + 1)
+        )
 
 
 @dataclass
@@ -72,16 +80,23 @@ class Map:
 
 @dataclass
 class Chart:
-    U: Interval
+    idx: int
+    U: Union[Interval, list]
     x: Map
 
-
-@dataclass
-class Set:
-    name: str
+    def contains(self, point):
+        if isinstance(self.U, Interval):
+            # 1D manifold
+            return self.U.contains(point)
+        else:
+            contained = [
+                interval.contains(point.coordinates[n])
+                for n, interval in enumerate(self.U)
+            ]
+            return np.all(contained)
 
 
 @dataclass
 class Manifold:
-    M: Set
+    M: Union[Interval, list]
     charts: list

@@ -1,1 +1,1 @@
-from manifold.manifolds import embeddings, Line, Circle
+from manifold.manifolds import embeddings, Line, Circle, Sphere
