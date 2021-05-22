@@ -51,15 +51,19 @@ class RNN:
         logger.debug("RNN - building connectivity matrix")
 
         # sample points
-        points = self.manifold.sample(n=k + 2, fill=True)[1:-1]
+        points = self.manifold.sample(n=k, fill=True)[1:-1]
 
         # get all the vectors
         v = []  # tangent vectors
         s = []  # states through non-linearity
         for n, point in enumerate(points):
             # get the network's h_dot as a sum of base function tangent vectors
+            weights = self.manifold.vectors_field(point)
             bases = np.vstack(
-                [fn.tangent_vector for fn in point.base_functions]
+                [
+                    fn.tangent_vector * w
+                    for w, fn in zip(weights, point.base_functions)
+                ]
             )
             vec = np.sum(bases, 0) * scale
 

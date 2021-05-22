@@ -34,19 +34,15 @@ class Manifold2D(BaseManifold):
 
         # sample from each interval the maifold is defined over.
         points = []
-        if full:
-            I0 = self.manifold.M[0].sample(n[0])
-            skip_first = False
-        else:
-            I0 = self.manifold.M[0].sample(n[0])
-            skip_first = True
+        I0 = self.manifold.M[0].sample(n[0] + 2)
         I1 = self.manifold.M[1].sample(n[1])
-
         for s, p0 in track(
             enumerate(I0), total=len(I0), description="Sampling..."
         ):
             for q, p1 in enumerate(I1):
-                if (q == 0 or s == 0 or s == len(I0)) and skip_first:
+                if (
+                    q == 0 or s == 0 or s == len(I0) - 1 or q == len(I1)
+                ) and not full:
                     continue
                 point = Point((p0, p1), self.embedding)
                 if point not in points:
@@ -146,6 +142,8 @@ class Plane(Manifold2D):
         ],
     )
 
+    vis_n_points = [30, 30]
+
     def __init__(self, embedding, n_sample_points=10):
         super().__init__(embedding, n_sample_points=n_sample_points)
 
@@ -184,7 +182,7 @@ class Sphere(Manifold2D):
         ],
     )
 
-    vis_n_points = [20, 20]
+    vis_n_points = [10, 20]
 
     def __init__(self, embedding, n_sample_points=10):
         super().__init__(embedding, n_sample_points=n_sample_points)
@@ -230,7 +228,7 @@ class Torus(Manifold2D):
         ],
     )
 
-    vis_n_points = [20, 40]
+    vis_n_points = [10, 40]
 
     def __init__(self, embedding, n_sample_points=10):
         super().__init__(embedding, n_sample_points=n_sample_points)

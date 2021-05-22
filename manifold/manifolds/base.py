@@ -1,16 +1,20 @@
 import numpy as np
 from loguru import logger
 
-from myterial import blue_grey, grey_dark, grey
+from myterial import blue_grey, grey_dark, grey, blue
 
 from manifold.topology import Point, Map
 from manifold.visualize import make_3D_ax
 from manifold.maps import identity
+from manifold.manifolds import vectors_fields
 
 
 class BaseManifold:
     # maps used by base functions
     base_functions_map = Map("id", identity, identity)
+
+    # maps to define vector fields on the manifold
+    vectors_field = vectors_fields.identity
 
     def __init__(self, embedding, n_sample_points=10):
         self.embedding = embedding
@@ -94,10 +98,10 @@ class BaseManifold:
             ax.scatter(
                 *p.embedded,
                 s=100,
-                # color=blue,
-                c=p.chart.idx,
-                vmin=-1,
-                vmax=4,
+                color=blue,
+                # c=p.chart.idx,
+                # vmin=-1,
+                # vmax=4,
                 zorder=2,
                 edgecolors=grey,
                 lw=0.5,

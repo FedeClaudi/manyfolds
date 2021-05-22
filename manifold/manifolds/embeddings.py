@@ -78,7 +78,7 @@ def plane_to_r3_flat(p0, p1):
 
 @to_coordinates2D
 def plane_to_r3(p0, p1):
-    return (p0 - 0.5, sin(p1) - 0.5, cos(2 * (p0 + p1 - 1)))
+    return (2 * p0 - 1, 2 * sin(p1) - 1, 2 * cos(2 * (p0 + p1 - 1)) - 1)
 
 
 # ----------------------------------- torus ---------------------------------- #

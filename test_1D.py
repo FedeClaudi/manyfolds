@@ -19,7 +19,7 @@ M.get_base_functions()
 # create RNN
 rnn = RNN(M, n_units=3)
 rnn.build_W(k=64, scale=10)
-rnn.run_points(n_seconds=25)
+rnn.run_points(n_seconds=1)
 
 # visualize in embedding
 ax = M.visualize_embedded()

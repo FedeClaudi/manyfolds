@@ -18,6 +18,7 @@ class BaseFunction:
     f: Map
 
     embedded = None
+    dim_idx = 0
 
     def embedd(self, x_range=0.1):
         """
