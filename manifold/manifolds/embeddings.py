@@ -47,7 +47,7 @@ def line_to_r3_flat(p):
 
 @to_coordinates
 def line_to_r3(p):
-    return (sin(2 * p), sin(p), -cos(p))
+    return (sin(2 * p) - 0.5, sin(p) * 2 - 1, -cos(p) * 4 + 3)
 
 
 # ---------------------------------- circle ---------------------------------- #

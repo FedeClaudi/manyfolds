@@ -1,11 +1,17 @@
 from loguru import logger
-from functools import partial
+import numpy as np
 from numpy import pi
+import matplotlib.pyplot as plt
 
 from manifold.topology import Point, Manifold, Map, Chart, Interval
-from manifold.maps import constant
+from manifold.maps import (
+    identity,
+    subtract_pi,
+    subtract_pi_inverse,
+    smul_pi,
+    smul_pi_inverse,
+)
 from manifold.base_function import BaseFunction
-from manifold.maps import identity
 from manifold.manifolds.base import BaseManifold
 
 
@@ -29,7 +35,8 @@ class Manifold1D(BaseManifold):
 
         for point in points:
             chart = self.get_chart_from_point(point)
-            point.projected = chart.x(point)
+            point.chart_coordinates = chart.x(point)
+            point.chart = chart
 
     def get_base_functions(self, points=None):
         """
@@ -40,15 +47,10 @@ class Manifold1D(BaseManifold):
         points = points or self.points
         for point in points:
             point.base_functions = [
-                BaseFunction(
-                    point=point,
-                    f=partial(constant, point.coordinates[0]),
-                    domain_interval=point.chart.U,
-                    dim_idx=0,
-                )
+                BaseFunction(point=point, f=self.base_functions_map,)
             ]
 
-    def sample(self, n=None, fill=False):
+    def sample(self, n=None, fill=False, **kwargs):
         """
             Samples N points from the manifold's interval ensuring that they are not too close
         """
@@ -64,23 +66,44 @@ class Manifold1D(BaseManifold):
             self._fill_points_data(points)
         return points
 
+    def visualize_charts(self):
+        """
+            Takes point from the manifold domain and shows their projections in
+            the charts domains
+        """
+        f, axes = plt.subplots(nrows=2, figsize=(16, 9), sharex=True)
+
+        for n, point in enumerate(self.sample(n=50, fill=True)):
+            axes[0].scatter(point.coordinates[0], 1, c=n, vmin=0, vmax=50)
+            axes[1].scatter(
+                point.chart_coordinates, point.chart.idx, c=n, vmin=0, vmax=50
+            )
+        axes[1].axhline(1, ls=":", color=[0.2, 0.2, 0.2], zorder=-1)
+        axes[1].axhline(2, ls=":", color=[0.2, 0.2, 0.2], zorder=-1)
+
+        axes[0].set(yticks=[], xlabel="M domain")
+        axes[1].set(
+            yticks=np.arange(len(self.manifold.charts)) + 1,
+            yticklabels=[f"chart {c.idx}" for c in self.manifold.charts],
+        )
+
 
 class Circle(Manifold1D):
     name = "S_1"
     manifold = Manifold(
         M=Interval("M", 0, 2 * pi),
         charts=[
-            Chart(
-                1,
-                Interval("U_1", 0, 1.5 * pi),
-                Map("x_1", identity, identity),
-            ),
+            Chart(1, Interval("U_1", 0, pi), Map("x_1", identity, identity),),
             Chart(
                 2,
-                Interval("U_2", 0.5 * pi, 2 * pi),
-                Map("x_2", identity, identity),
+                Interval("U_2", pi, 2 * pi, left_open=True),
+                Map("x_2", subtract_pi, subtract_pi_inverse),
             ),
         ],
+    )
+
+    base_functions_map = Map(
+        "pi scalar multiplication", smul_pi, smul_pi_inverse
     )
 
     def __init__(self, embedding, n_sample_points=10):

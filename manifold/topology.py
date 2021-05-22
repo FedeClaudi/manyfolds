@@ -35,6 +35,7 @@ class Interval:
     name: str
     left: float
     right: float
+    left_open: bool = False  # if its open at left or right
 
     @property
     def l(self):
@@ -53,10 +54,12 @@ class Interval:
         else:
             p = point
 
-        if p >= self.left and p < self.right:
-            return True
+        if not self.left_open:
+            contained = p >= self.left and p < self.right
         else:
-            return False
+            contained = p > self.left and p <= self.right
+
+        return contained
 
     def sample(self, n=10, l_offset=0, r_offset=0):
         return list(
@@ -73,7 +76,10 @@ class Map:
     def __call__(self, x):
         if isinstance(x, Point):
             return self.f(x.coordinates)
-
+        elif isinstance(x, np.ndarray):
+            return self.f(x)
+        elif isinstance(x, (tuple, list)):
+            return [self.f(xx) for xx in x]
         else:
             raise NotImplementedError
 

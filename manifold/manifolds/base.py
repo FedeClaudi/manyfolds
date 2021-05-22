@@ -3,11 +3,15 @@ from loguru import logger
 
 from myterial import blue_grey, grey_dark, grey
 
-from manifold.topology import Point
+from manifold.topology import Point, Map
 from manifold.visualize import make_3D_ax
+from manifold.maps import identity
 
 
 class BaseManifold:
+    # maps used by base functions
+    base_functions_map = Map("id", identity, identity)
+
     def __init__(self, embedding, n_sample_points=10):
         self.embedding = embedding
 
@@ -101,7 +105,7 @@ class BaseManifold:
 
         if self.d == 1:
             ax.plot(
-                self.embedded[0, 0],
+                self.embedded[:, 0],
                 self.embedded[:, 1],
                 self.embedded[:, 2],
                 lw=1.5,
@@ -198,3 +202,6 @@ class BaseManifold:
             Samples N points from the manifold's interval ensuring that they are not too close
         """
         raise NotImplementedError("sample Method not implemented")
+
+    def visualize_charts(self):
+        raise NotImplementedError('"visualize_charts" not implemented ')

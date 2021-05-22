@@ -1,10 +1,9 @@
 from loguru import logger
-from functools import partial
 from numpy import pi
+import matplotlib.pyplot as plt
 
 from manifold.topology import Point, Manifold, Map, Chart, Interval
-from manifold.maps import constant
-from manifold.base_function import BaseFunction
+from manifold.base_function import BaseFunction2D
 from manifold.maps import identity
 from manifold.manifolds.base import BaseManifold
 
@@ -16,6 +15,11 @@ class Manifold2D(BaseManifold):
 
     d = 2
     vis_n_points = [8, 40]
+
+    base_functions_map = [
+        Map("id", identity, identity),
+        Map("id", identity, identity),
+    ]
 
     def __init__(self, embedding, n_sample_points):
         super().__init__(embedding, n_sample_points=n_sample_points)
@@ -59,7 +63,8 @@ class Manifold2D(BaseManifold):
 
         for point in points:
             chart = self.get_chart_from_point(point)
-            point.projected = chart.x(point)
+            point.chart_coordinates = chart.x(point)
+            point.chart = chart
 
     def get_base_functions(self, points=None):
         """
@@ -70,19 +75,44 @@ class Manifold2D(BaseManifold):
         points = points or self.points
         for point in points:
             point.base_functions = [
-                BaseFunction(
-                    point=point,
-                    f=partial(constant, point.coordinates[0]),
-                    domain_interval=point.chart.U[0],
-                    dim_idx=0,
+                BaseFunction2D(
+                    point=point, f=self.base_functions_map[0], dim_idx=0,
                 ),
-                BaseFunction(
-                    point=point,
-                    f=partial(constant, point.coordinates[1]),
-                    domain_interval=point.chart.U[1],
-                    dim_idx=1,
+                BaseFunction2D(
+                    point=point, f=self.base_functions_map[1], dim_idx=1,
                 ),
             ]
+
+    def visualize_charts(self):
+        """
+            Takes point from the manifold domain and shows their projections in
+            the charts domains
+        """
+        f, axes = plt.subplots(
+            nrows=3, ncols=2, figsize=(16, 9), sharex=True, sharey=True
+        )
+        axes[0, 1].axis("off")
+        axes = axes.flatten()
+
+        for n, point in enumerate(
+            self.sample(n=[10, 10], fill=True, full=True)
+        ):
+            axes[0].scatter(*point.coordinates, c=n, vmin=0, vmax=100)
+
+            axes[point.chart.idx + 1].scatter(
+                *point.chart_coordinates, c=n, vmin=0, vmax=100
+            )
+
+        axes[0].set(title="Manifold points")
+        axes[2].set(title="Chart 1")
+        axes[3].set(title="Chart 2")
+        axes[4].set(title="Chart 3")
+        axes[5].set(title="Chart 4")
+
+
+# ---------------------------------------------------------------------------- #
+#                                   MANIFOLDS                                  #
+# ---------------------------------------------------------------------------- #
 
 
 class Plane(Manifold2D):
@@ -150,6 +180,8 @@ class Sphere(Manifold2D):
             ),
         ],
     )
+
+    vis_n_points = [20, 40]
 
     def __init__(self, embedding, n_sample_points=10):
         super().__init__(embedding, n_sample_points=n_sample_points)
