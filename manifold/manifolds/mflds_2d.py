@@ -1,6 +1,7 @@
 from loguru import logger
 from numpy import pi
 import matplotlib.pyplot as plt
+from rich.progress import track
 
 from manifold.topology import Point, Manifold, Map, Chart, Interval
 from manifold.base_function import BaseFunction2D
@@ -41,9 +42,11 @@ class Manifold2D(BaseManifold):
             skip_first = True
         I1 = self.manifold.M[1].sample(n[1])
 
-        for s, p0 in enumerate(I0):
+        for s, p0 in track(
+            enumerate(I0), total=len(I0), description="Sampling..."
+        ):
             for q, p1 in enumerate(I1):
-                if (q == 0 or s == 0) and skip_first:
+                if (q == 0 or s == 0 or s == len(I0)) and skip_first:
                     continue
                 point = Point((p0, p1), self.embedding)
                 if point not in points:
@@ -181,7 +184,7 @@ class Sphere(Manifold2D):
         ],
     )
 
-    vis_n_points = [20, 40]
+    vis_n_points = [20, 20]
 
     def __init__(self, embedding, n_sample_points=10):
         super().__init__(embedding, n_sample_points=n_sample_points)

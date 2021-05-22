@@ -1,10 +1,9 @@
 import numpy as np
 from loguru import logger
 from dataclasses import dataclass
+from rich.progress import track
 
 from myterial import salmon
-
-from manifold.maths import min_distance_from_point
 
 
 @dataclass
@@ -18,7 +17,7 @@ class Trace:
 
 
 class RNN:
-    dt = 0.001
+    dt = 0.01
     sigma = np.tanh
 
     traces = []  # stores results of runnning RNN on initial conditions
@@ -49,6 +48,7 @@ class RNN:
         """
         if self.manifold.d > 1:
             logger.warning("RNN -build W method is not adapted for d>1")
+        logger.debug("RNN - building connectivity matrix")
 
         # sample points
         points = self.manifold.sample(n=k + 2, fill=True)[1:-1]
@@ -57,7 +57,14 @@ class RNN:
         v = []  # tangent vectors
         s = []  # states through non-linearity
         for n, point in enumerate(points):
-            v.append(point.base_functions[0].tangent_vector * scale)
+            # get the network's h_dot as a sum of base function tangent vectors
+            bases = np.vstack(
+                [fn.tangent_vector for fn in point.base_functions]
+            )
+            vec = np.sum(bases, 0) * scale
+
+            # keep track for each point to build sys of equations
+            v.append(vec)
             s.append(self.sigma(point.embedded))
 
         V = np.linalg.pinv(np.vstack(v).T)
@@ -93,27 +100,25 @@ class RNN:
 
         self.traces.append(Trace(trace[0, :], trace))
 
-        logger.debug(
-            f"Initial condition completed - trace ends at distance from manifold: {min_distance_from_point(self.manifold.embedded, trace[-1, :])}"
-        )
-
     def run_points(self, points=None, n_seconds=10):
         """
             Runs the RNN on each sampled point for the manifold
         """
         points = points or self.manifold.points
 
-        for point in points:
+        for point in track(
+            points, description="Running initial conditions..."
+        ):
             self.run_initial_condition(
                 np.array(point.embedded), n_seconds=n_seconds
             )
 
-    def plot_traces(self, ax):
+    def plot_traces(self, ax, skip=1):
         for trace in self.traces:
             ax.plot(
-                trace.trace[:, 0],
-                trace.trace[:, 1],
-                trace.trace[:, 2],
+                trace.trace[:, 0][::skip],
+                trace.trace[:, 1][::skip],
+                trace.trace[:, 2][::skip],
                 c=salmon,
                 lw=1,
             )

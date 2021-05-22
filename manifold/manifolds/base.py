@@ -150,29 +150,9 @@ class BaseManifold:
                     lw=5,
                     color=grey_dark,
                 )
-                # ax.scatter(
-                #     fn.embedded[0, 0],
-                #     fn.embedded[0, 1],
-                #     fn.embedded[0, 2],
-                #     s=100,
-                #     color='m',
-                # )
-                # ax.scatter(
-                #     *fn.point.embedded,
-                #     s=100,
-                #     color='k',
-                # )
-                # ax.scatter(
-                #     fn.embedded[-1, 0],
-                #     fn.embedded[-1, 1],
-                #     fn.embedded[-1, 2],
-                #     s=100,
-                #     color='r',
-                # )
 
                 # plot the scaled tangent vector at the point
-                vector = fn.tangent_vector
-                vector = vector / np.linalg.norm(vector) * scale
+                vector = fn.tangent_vector * scale
                 ax.plot(
                     [fn.point.embedded[0], fn.point.embedded[0] + vector[0]],
                     [fn.point.embedded[1], fn.point.embedded[1] + vector[1]],

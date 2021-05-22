@@ -67,6 +67,7 @@ class BaseFunction:
             logger.warning(
                 f"Tangent vector for base function {self} is vanishing"
             )
+        derivative /= np.linalg.norm(derivative)
 
         return derivative[:, self.embedded_point_index].T
 
@@ -136,5 +137,6 @@ class BaseFunction2D:
             logger.warning(
                 f"Tangent vector for base function {self} is vanishing"
             )
+        derivative /= np.linalg.norm(derivative)
 
         return derivative[:, self.embedded_point_index].T
