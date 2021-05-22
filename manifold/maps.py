@@ -60,7 +60,7 @@ def scalar_multiplication(k, *args):
     for x in args:
         try:
             if isinstance(x, (tuple, list)) and len(x) > 1:
-                raise NotImplementedError
+                out.append([xx * k for xx in x])
             elif isinstance(x, (tuple, list)):
                 out.append(x[0] * k)
             else:
@@ -89,3 +89,13 @@ def smul_pi(*args):
 @return_many
 def smul_pi_inverse(*args):
     return scalar_multiplication(1 / pi, *args)
+
+
+@return_many
+def smul_2pi(*args):
+    return scalar_multiplication(2 * pi, *args)
+
+
+@return_many
+def smul_2pi_inverse(*args):
+    return scalar_multiplication(1 / (2 * pi), *args)

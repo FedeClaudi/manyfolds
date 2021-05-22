@@ -5,6 +5,7 @@ from rich.progress import track
 
 from manifold.topology import Point, Manifold, Map, Chart, Interval
 from manifold.base_function import BaseFunction2D
+from manifold import maps
 from manifold.maps import identity
 from manifold.manifolds.base import BaseManifold
 
@@ -18,8 +19,8 @@ class Manifold2D(BaseManifold):
     vis_n_points = [8, 40]
 
     base_functions_map = [
-        Map("id", identity, identity),
-        Map("id", identity, identity),
+        Map("id", maps.identity, maps.identity),
+        Map("id", maps.identity, maps.identity),
     ]
 
     def __init__(self, embedding, n_sample_points):
@@ -40,10 +41,11 @@ class Manifold2D(BaseManifold):
             enumerate(I0), total=len(I0), description="Sampling..."
         ):
             for q, p1 in enumerate(I1):
-                if (
-                    q == 0 or s == 0 or s == len(I0) - 1 or q == len(I1)
-                ) and not full:
+                # if (q == 0 or s == 0 or s == len(I0)-1 or q == len(I1)) and not full:
+                #     continue
+                if (s == 0 or s == len(I0)) and not full:
                     continue
+
                 point = Point((p0, p1), self.embedding)
                 if point not in points:
                     points.append(point)
@@ -182,7 +184,11 @@ class Sphere(Manifold2D):
         ],
     )
 
-    vis_n_points = [10, 20]
+    vis_n_points = [5, 20]
+    base_functions_map = [
+        Map("id", maps.smul_pi, maps.smul_pi_inverse),
+        Map("id", maps.smul_2pi, maps.smul_2pi_inverse),
+    ]
 
     def __init__(self, embedding, n_sample_points=10):
         super().__init__(embedding, n_sample_points=n_sample_points)
@@ -229,6 +235,11 @@ class Torus(Manifold2D):
     )
 
     vis_n_points = [10, 40]
+
+    base_functions_map = [
+        Map("id", maps.smul_2pi, maps.smul_2pi_inverse),
+        Map("id", maps.smul_2pi, maps.smul_2pi_inverse),
+    ]
 
     def __init__(self, embedding, n_sample_points=10):
         super().__init__(embedding, n_sample_points=n_sample_points)

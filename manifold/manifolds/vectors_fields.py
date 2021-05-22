@@ -39,19 +39,19 @@ def identity(point):
 
 @sel_args
 @normalize
-def just_first(point):
+def first_only(point):
     return (1, 0)
 
 
 @sel_args
 @normalize
-def just_second(point):
+def second_only(point):
     return (0, 1)
 
 
 @sel_args
 @normalize
-def scale_first(point, fact=10):
+def scale_first(point, fact=50):
     """
         Scales the second dimension wrt the first
     """

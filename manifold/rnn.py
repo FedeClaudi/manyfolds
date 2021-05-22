@@ -17,7 +17,7 @@ class Trace:
 
 
 class RNN:
-    dt = 0.01
+    dt = 0.001
     sigma = np.tanh
 
     traces = []  # stores results of runnning RNN on initial conditions
@@ -46,8 +46,6 @@ class RNN:
             This can be used to find W such that hdot is in the tangent space
             at each point.
         """
-        if self.manifold.d > 1:
-            logger.warning("RNN -build W method is not adapted for d>1")
         logger.debug("RNN - building connectivity matrix")
 
         # sample points
@@ -124,5 +122,5 @@ class RNN:
                 trace.trace[:, 1][::skip],
                 trace.trace[:, 2][::skip],
                 c=salmon,
-                lw=1,
+                lw=4,
             )
