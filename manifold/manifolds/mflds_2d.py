@@ -1,13 +1,14 @@
 from loguru import logger
 from numpy import pi
 import matplotlib.pyplot as plt
-from rich.progress import track
+import numpy as np
 
 from manifold.topology import Point, Manifold, Map, Chart, Interval
 from manifold.base_function import BaseFunction2D
 from manifold import maps
 from manifold.maps import identity
 from manifold.manifolds.base import BaseManifold
+from manifold.maths import cartesian_product
 
 
 class Manifold2D(BaseManifold):
@@ -26,7 +27,7 @@ class Manifold2D(BaseManifold):
     def __init__(self, embedding, n_sample_points):
         super().__init__(embedding, n_sample_points=n_sample_points)
 
-    def sample(self, n=None, fill=False, full=False):
+    def sample(self, n=None, fill=False, full=True):
         n = n or self.n_sample_points
         if not isinstance(n, list):
             n = [n] * self.d
@@ -35,20 +36,17 @@ class Manifold2D(BaseManifold):
 
         # sample from each interval the maifold is defined over.
         points = []
-        I0 = self.manifold.M[0].sample(n[0] + 2)
-        I1 = self.manifold.M[1].sample(n[1])
-        for s, p0 in track(
-            enumerate(I0), total=len(I0), description="Sampling..."
-        ):
-            for q, p1 in enumerate(I1):
-                # if (q == 0 or s == 0 or s == len(I0)-1 or q == len(I1)) and not full:
-                #     continue
-                if (s == 0 or s == len(I0)) and not full:
-                    continue
+        if not full:
+            I0 = np.array(self.manifold.M[0].sample(n[0] + 2)[1:-1])
+        else:
+            I0 = np.array(self.manifold.M[0].sample(n[0]))
+        I1 = np.array(self.manifold.M[1].sample(n[1]))
 
-                point = Point((p0, p1), self.embedding)
-                if point not in points:
-                    points.append(point)
+        points_coords = cartesian_product(I0, I1)
+        points = [
+            Point(tuple(points_coords[n, :]), self.embedding)
+            for n in range(points_coords.shape[0])
+        ]
 
         if fill:
             self._fill_points_data(points)
@@ -234,7 +232,7 @@ class Torus(Manifold2D):
         ],
     )
 
-    vis_n_points = [10, 40]
+    vis_n_points = [10, 50]
 
     base_functions_map = [
         Map("id", maps.smul_2pi, maps.smul_2pi_inverse),

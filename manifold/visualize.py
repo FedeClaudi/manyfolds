@@ -5,20 +5,22 @@ import matplotlib.pyplot as plt
 blue = "#c3c3db"
 
 
-def make_3D_ax():
+def make_3D_ax(nolim=False):
     plt.figure(figsize=(9, 9))
     ax = plt.axes(projection="3d")
     ax.set(
-        xlim=[-1, 1],
-        ylim=[-1, 1],
-        zlim=[-1, 1],
-        xlabel="$x^1$",
-        ylabel="$x^2$",
-        zlabel="$x^3$",
-        xticks=[-1, 0, 1],
-        yticks=[-1, 0, 1],
-        zticks=[-1, 0, 1],
+        xlabel="$x^1$", ylabel="$x^2$", zlabel="$x^3$",
     )
+
+    if not nolim:
+        ax.set(
+            xlim=[-1, 1],
+            ylim=[-1, 1],
+            zlim=[-1, 1],
+            xticks=[-1, 0, 1],
+            yticks=[-1, 0, 1],
+            zticks=[-1, 0, 1],
+        )
 
     ax.grid(False)
     ax.xaxis.pane.set_edgecolor("black")

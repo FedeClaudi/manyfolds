@@ -6,6 +6,20 @@ from loguru import logger
 from manifold.topology import Point, Interval, Map
 
 
+def take_derivative_at_point(arr, idx):
+    """
+        Takes the derivative of a function's image
+        at a point
+    """
+
+    derivative = np.diff(arr, axis=0)[idx, :]
+    if np.linalg.norm(derivative) == 0:
+        logger.warning(f"Tangent vector for base function is vanishing")
+    derivative /= np.linalg.norm(derivative)
+
+    return derivative.T
+
+
 @dataclass
 class BaseFunction:
     """
@@ -62,15 +76,9 @@ class BaseFunction:
         """
         if self.embedded is None:
             self.embedd()
-
-        derivative = np.diff(self.embedded.T)
-        if np.linalg.norm(derivative) == 0:
-            logger.warning(
-                f"Tangent vector for base function {self} is vanishing"
-            )
-        derivative /= np.linalg.norm(derivative)
-
-        return derivative[:, self.embedded_point_index].T
+        return take_derivative_at_point(
+            self.embedded, self.embedded_point_index
+        )
 
 
 @dataclass
@@ -132,12 +140,6 @@ class BaseFunction2D:
         """
         if self.embedded is None:
             self.embedd()
-
-        derivative = np.diff(self.embedded.T)
-        if np.linalg.norm(derivative) == 0:
-            logger.warning(
-                f"Tangent vector for base function {self} is vanishing"
-            )
-        derivative /= np.linalg.norm(derivative)
-
-        return derivative[:, self.embedded_point_index].T
+        return take_derivative_at_point(
+            self.embedded, self.embedded_point_index
+        )

@@ -17,7 +17,7 @@ class Trace:
 
 
 class RNN:
-    dt = 0.001
+    dt = 0.1
     sigma = np.tanh
 
     traces = []  # stores results of runnning RNN on initial conditions
@@ -46,10 +46,11 @@ class RNN:
             This can be used to find W such that hdot is in the tangent space
             at each point.
         """
-        logger.debug("RNN - building connectivity matrix")
+        logger.debug(f"RNN - building connectivity matrix with {k} points")
 
         # sample points
-        points = self.manifold.sample(n=k, fill=True)[1:-1]
+        points = self.manifold.sample(n=k, fill=True)
+        # logger.debug([p.coordinates for p in points])
 
         # get all the vectors
         v = []  # tangent vectors
@@ -57,6 +58,7 @@ class RNN:
         for n, point in enumerate(points):
             # get the network's h_dot as a sum of base function tangent vectors
             weights = self.manifold.vectors_field(point)
+
             bases = np.vstack(
                 [
                     fn.tangent_vector * w
@@ -83,9 +85,11 @@ class RNN:
         """
 
         # get W
-        self.W = np.linalg.lstsq(V, S, rcond=None)[0]
+        noise = np.random.uniform(0, 1e-7, size=V.shape)
+        logger.debug(f"Constraits matrix shape: {V.shape}")
+        self.W = np.linalg.lstsq(V + noise, S, rcond=-1)[0]
         # self.W = np.linalg.solve(V, S)
-        logger.debug(f"RNN connection matrix:\n {self.W}")
+        logger.debug(f"RNN connection matrix shape: {self.W.shape}")
 
     def step(self, h):
         h = np.array(h)

@@ -13,20 +13,17 @@ if MANIFOLD == "line":
 else:
     M = Circle(embeddings.circle_to_r3, n_sample_points=3)
 
-# create base functions at each point in the manfiold
-M.get_base_functions()
-
 # create RNN
 rnn = RNN(M, n_units=3)
-rnn.build_W(k=64, scale=10)
-rnn.run_points(n_seconds=1)
+rnn.build_W(k=10, scale=1)
+rnn.run_points(n_seconds=0.2)
 
 # visualize in embedding
 ax = M.visualize_embedded()
 M.visualize_base_functions_at_point(ax, x_range=0.05, scale=0.5)
 
 # visualize charts
-M.visualize_charts()
+# M.visualize_charts()
 
 # visualize RNN dynamics
 rnn.plot_traces(ax)

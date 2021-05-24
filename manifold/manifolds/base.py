@@ -1,7 +1,6 @@
 import numpy as np
-from loguru import logger
 
-from myterial import blue_grey, grey_dark, grey, blue
+from myterial import grey_dark, grey, blue, green
 
 from manifold.topology import Point, Map
 from manifold.visualize import make_3D_ax
@@ -24,17 +23,19 @@ class BaseManifold:
             self.n_sample_points = n_sample_points + 2
 
             # sample points in the manifold
-            self.points = self.sample()[1:-1]
+            self.points = self.sample()[:-1]
         else:
             self.n_sample_points = n_sample_points
             self.points = self.sample()
-        logger.debug(f"")
 
         # project with charts
         self.project_with_charts()
 
         # embedd
         self.embedd()
+
+        # get base functions at each point
+        self.get_base_functions()
 
     @property
     def n(self):
@@ -99,9 +100,6 @@ class BaseManifold:
                 *p.embedded,
                 s=100,
                 color=blue,
-                # c=p.chart.idx,
-                # vmin=-1,
-                # vmax=4,
                 zorder=2,
                 edgecolors=grey,
                 lw=0.5,
@@ -144,7 +142,9 @@ class BaseManifold:
             x_range = [x_range] * self.d
 
         for point in self.points:
-            for fn in point.base_functions:
+            weights = self.vectors_field(point)
+            vectors = []
+            for n, fn in enumerate(point.base_functions):
                 # plot the function
                 fn.embedd(x_range=x_range[fn.dim_idx])
                 ax.plot(
@@ -156,14 +156,16 @@ class BaseManifold:
                 )
 
                 # plot the scaled tangent vector at the point
-                vector = fn.tangent_vector * scale
-                ax.plot(
-                    [fn.point.embedded[0], fn.point.embedded[0] + vector[0]],
-                    [fn.point.embedded[1], fn.point.embedded[1] + vector[1]],
-                    [fn.point.embedded[2], fn.point.embedded[2] + vector[2]],
-                    lw=4,
-                    color=blue_grey,
-                )
+                vectors.append(fn.tangent_vector * scale * weights[n])
+
+            vector = np.sum(np.vstack(vectors), 0)
+            ax.plot(
+                [fn.point.embedded[0], fn.point.embedded[0] + vector[0]],
+                [fn.point.embedded[1], fn.point.embedded[1] + vector[1]],
+                [fn.point.embedded[2], fn.point.embedded[2] + vector[2]],
+                lw=4,
+                color=green,
+            )
 
     # ------------------------ to implement in subclasses ------------------------ #
     def project_with_charts(self, points=None):

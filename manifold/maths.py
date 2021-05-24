@@ -1,4 +1,9 @@
 import numpy as np
+import itertools
+
+
+def cartesian_product(X, Y):
+    return np.array(list(itertools.product(X, Y)))
 
 
 def unit_vector(vector):
