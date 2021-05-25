@@ -10,6 +10,8 @@ from manifold.maps import (
     subtract_pi_inverse,
     smul_pi,
     smul_pi_inverse,
+    smul_2,
+    smul_2_inverse,
 )
 from manifold.base_function import BaseFunction
 from manifold.manifolds.base import BaseManifold
@@ -21,7 +23,7 @@ class Manifold1D(BaseManifold):
     """
 
     d = 1
-    vis_n_points = 100
+    vis_n_points = 300
 
     def __init__(self, embedding, n_sample_points):
         super().__init__(embedding, n_sample_points=n_sample_points)
@@ -117,8 +119,12 @@ class Line(Manifold1D):
     manifold = Manifold(
         M=Interval("M", 0, 1),
         charts=[
-            Chart(1, Interval("U_1", 0, 0.7), Map("x_1", identity, identity),),
-            Chart(2, Interval("U_2", 0.3, 1), Map("x_2", identity, identity),),
+            Chart(
+                1, Interval("U_1", 0, 0.5), Map("x_1", smul_2, smul_2_inverse),
+            ),
+            Chart(
+                2, Interval("U_2", 0.5, 1), Map("x_2", smul_2_inverse, smul_2),
+            ),
         ],
     )
 

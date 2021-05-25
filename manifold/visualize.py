@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 blue = "#c3c3db"
 
 
-def make_3D_ax(nolim=False):
+def make_3D_ax(nolim=True):
     plt.figure(figsize=(9, 9))
     ax = plt.axes(projection="3d")
     ax.set(

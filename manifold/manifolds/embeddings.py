@@ -62,8 +62,8 @@ def line_to_r3(p):
 
 
 @parse
-def helix(p):
-    return (cos(2 * pi * p), sin(2 * pi * p), 2 * p - 1)
+def helix_to_r3(p):
+    return (cos(4 * pi * p) / 2, sin(4 * pi * p) / 2, p)
 
 
 # ---------------------------------- circle ---------------------------------- #
@@ -76,32 +76,37 @@ def circle_to_r3_flat(p):
 
 
 @parse
-def circle_to_r3(p):
+def circle_to_r3_angled(p):
     return (sin(p), cos(p) / 2, sin(p))
+
+
+@parse
+def circle_to_r3(p):
+    return (sin(p), cos(p) / 2, sin(4 * p))
 
 
 # ---------------------------------- sphere ---------------------------------- #
 @parse2D
 def sphere_to_r3(p0, p1):
-    return (sin(p0) * cos(p1), sin(p0) * sin(p1), cos(p0))
+    return (sin(p0) * cos(p1) * 0.75, sin(p0) * sin(p1) * 0.75, cos(p0) * 0.75)
 
 
 # ----------------------------------- plane ---------------------------------- #
 @parse2D
 def plane_to_r3_flat(p0, p1):
-    return (p0 - 0.5, p1 - 0.5, p0 + p1 - 1)
+    return (p0, p1, 0.5 * (p0 + p1))
 
 
 @parse2D
 def plane_to_r3(p0, p1):
-    return (2 * p0 - 1, 2 * sin(p1) - 1, 2 * cos(2 * (p0 + p1 - 1)) - 1)
+    return (p0, sin(p1), p1 * p0)
 
 
 # ----------------------------------- torus ---------------------------------- #
 @parse2D
 def torus_to_r3(p0, p1):
-    R = 0.75  # torus center -> tube center
-    r = 0.5  # tubre radius
+    R = 0.5  # torus center -> tube center
+    r = 0.25  # tubre radius
     return (
         (R + r * cos(p0)) * cos(p1),
         (R + r * cos(p0)) * sin(p1),
@@ -109,28 +114,38 @@ def torus_to_r3(p0, p1):
     )
 
 
+# --------------------------------- cylinder --------------------------------- #
+@parse2D
+def cylinder_to_r3(p0, p1):
+    return (sin(p0) / 2, cos(p0) / 2, p1 + 0.1)
+
+
+@parse2D
+def cylinder_to_r3_as_cone(p0, p1):
+    k = p1 / 2 + 0.4
+    return (k * sin(p0) / 2, k * cos(p0) / 2, p1 + 0.1)
+
+
 # ---------------------------------------------------------------------------- #
 #                                    R^N > 3                                   #
 # ---------------------------------------------------------------------------- #
 
 # ----------------------------------- line ----------------------------------- #
-@parse
-def line_to_rn(funcs, factors, scales, p):
+def line_to_rn(mtx, p):
     """
         Embeds points of a line manifold in high D space
         with a set of trigonometric functions
     """
-    coords = np.hstack(
-        [f(s * p) * scale for s, f, scale in zip(factors, funcs, scales)]
-    )
-    return tuple(coords)
+    # mtx = np.eye(mtx.shape[0])
+    # mtx = np.zeros_like(mtx)
+    # mtx[:3, :3] = np.eye(3)
+    embedded = mtx @ np.array(line_to_r3(p))
+    return tuple(embedded)
 
 
 def prepare_line_to_rn(n=64):
-    funcs = npr.choice((sin, cos), size=n)
-    factors = npr.choice((1, 2), size=n)
-    scales = npr.uniform(0.2, 0.6, size=n)
-    return partial(line_to_rn, funcs, factors, scales)
+    mtx = ortho_group.rvs(n)[:, :3]
+    return partial(line_to_rn, mtx)
 
 
 @parse
@@ -176,6 +191,77 @@ def prepare_circle_embedding(n=64):
     return partial(circle_to_rn_flat, v, m)
 
 
+# ----------------------------------- helix ---------------------------------- #
+
+
+@parse
+def helix_to_rn(mtx, p):
+    """
+        Embeds points of a helix manifold in high D space
+        with a set of trigonometric functions
+    """
+    embedded = mtx @ np.array(helix_to_r3(p))
+    return tuple(embedded)
+
+
+def prepare_helix_to_rn(n=64):
+    mtx = np.random.rand(n, 3)
+    return partial(helix_to_rn, mtx)
+
+
+# ---------------------------------- sphere ---------------------------------- #
+def sphere_to_rn(mtx, p):
+    """
+        Embedd a sphere by first embedding it in
+        R3 and then using a linear transformatin
+        to Rn
+    """
+    sphere_3d = sphere_to_r3(p)
+    embedded = mtx @ np.array(sphere_3d)
+    return tuple(embedded)
+
+
+def prepare_sphere_to_rn(n=64):
+    mtx = np.random.rand(n, 3)
+
+    return partial(sphere_to_rn, mtx)
+
+
+# ---------------------------------- plane ---------------------------------- #
+def plane_to_rn(mtx, p):
+    """
+        Embedd a plane by first embedding it in
+        R3 and then using a linear transformatin
+        to Rn
+    """
+    plane_3d = plane_to_r3(p)
+    embedded = mtx @ np.array(plane_3d)
+    return tuple(embedded)
+
+
+def prepare_plane_to_rn(n=64):
+    mtx = np.random.rand(n, 3)
+
+    return partial(plane_to_rn, mtx)
+
+
+def flat_plane_to_rn(mtx, p):
+    """
+        Embedd a plane by first embedding it in
+        R3 and then using a linear transformatin
+        to Rn
+    """
+    plane_3d = plane_to_r3_flat(p)
+    embedded = mtx @ np.array(plane_3d)
+    return tuple(embedded)
+
+
+def prepare_flat_plane_to_rn(n=64):
+    mtx = np.random.rand(n, 3)
+
+    return partial(flat_plane_to_rn, mtx)
+
+
 # ----------------------------------- torus ---------------------------------- #
 def torus_to_rn(mtx, p):
     """
@@ -192,3 +278,21 @@ def prepare_torus_to_rn(n=64):
     mtx = np.random.rand(n, 3)
 
     return partial(torus_to_rn, mtx)
+
+
+# ----------------------------------- cylinder ---------------------------------- #
+def cylinder_to_rn(mtx, p):
+    """
+        Embedd a cylinder by first embedding it in
+        R3 and then using a linear transformatin
+        to Rn
+    """
+    cylinder_3d = cylinder_to_r3(p)
+    embedded = mtx @ np.array(cylinder_3d)
+    return tuple(embedded)
+
+
+def prepare_cylinder_to_rn(n=64):
+    mtx = np.random.rand(n, 3)
+
+    return partial(cylinder_to_rn, mtx)

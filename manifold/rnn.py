@@ -5,6 +5,8 @@ from rich.progress import track
 
 from myterial import salmon
 
+from manifold.maths import tanh
+
 
 @dataclass
 class Trace:
@@ -17,8 +19,8 @@ class Trace:
 
 
 class RNN:
-    dt = 0.1
-    sigma = np.tanh
+    dt = 0.01
+    sigma = tanh
 
     traces = []  # stores results of runnning RNN on initial conditions
 
@@ -49,7 +51,9 @@ class RNN:
         logger.debug(f"RNN - building connectivity matrix with {k} points")
 
         # sample points
-        points = self.manifold.sample(n=k, fill=True)
+        points = self.manifold.sample(n=k - 1, fill=True,)
+        if len(points) != k and len(points) != k ** 2:
+            raise ValueError(f"Got {len(points)} points with k={k}")
         # logger.debug([p.coordinates for p in points])
 
         # get all the vectors
@@ -71,23 +75,12 @@ class RNN:
             v.append(vec)
             s.append(self.sigma(point.embedded))
 
-        V = np.linalg.pinv(np.vstack(v).T)
-        S = np.linalg.pinv(np.vstack(s).T)
-        """
-            Note:
-                from the derivation we get:
-                    Hdot = W * H
-                but to solve for W we need to have:
-                    AW = B
-                so we multiply things around to get
-                    H^-1 * W = Hdot^-1
-                and solve for W
-        """
-
         # get W
-        noise = np.random.uniform(0, 1e-7, size=V.shape)
-        logger.debug(f"Constraits matrix shape: {V.shape}")
-        self.W = np.linalg.lstsq(V + noise, S, rcond=-1)[0]
+        V = np.vstack(v).T
+        S = np.linalg.pinv(np.vstack(s).T)
+        noise = np.random.uniform(0, 1e-6, size=S.shape)
+        self.W = V @ (S + noise) / self.dt
+
         # self.W = np.linalg.solve(V, S)
         logger.debug(f"RNN connection matrix shape: {self.W.shape}")
 
@@ -126,5 +119,6 @@ class RNN:
                 trace.trace[:, 1][::skip],
                 trace.trace[:, 2][::skip],
                 c=salmon,
-                lw=4,
+                lw=3,
+                alpha=0.75,
             )

@@ -15,6 +15,7 @@ def take_derivative_at_point(arr, idx):
     derivative = np.diff(arr, axis=0)[idx, :]
     if np.linalg.norm(derivative) == 0:
         logger.warning(f"Tangent vector for base function is vanishing")
+        derivative += 0.001
     derivative /= np.linalg.norm(derivative)
 
     return derivative.T
@@ -41,8 +42,8 @@ class BaseFunction:
             manifold embedding map
         """
         N = 100  # number of samples over the domain
-        self.embedded_point_index = int(
-            N / 2
+        self.embedded_point_index = (
+            int(N / 2) - 1
         )  # index of the embedding point corresponding to the function's point
 
         # get domain of the function by using the inverse map

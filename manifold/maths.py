@@ -2,6 +2,16 @@ import numpy as np
 import itertools
 
 
+def ReLU(_, x):
+    x = np.array(x)
+    return x * (x > 0)
+
+
+def tanh(_, x):
+    x = np.array(x)
+    return np.tanh(x)
+
+
 def cartesian_product(X, Y):
     return np.array(list(itertools.product(X, Y)))
 

@@ -16,6 +16,7 @@ class Manifold2D(BaseManifold):
         Base class for 2D manifolds e.g. sphere
     """
 
+    _full = True
     d = 2
     vis_n_points = [8, 40]
 
@@ -27,7 +28,8 @@ class Manifold2D(BaseManifold):
     def __init__(self, embedding, n_sample_points):
         super().__init__(embedding, n_sample_points=n_sample_points)
 
-    def sample(self, n=None, fill=False, full=True):
+    def sample(self, n=None, fill=False, full=None):
+        full = full or self._full
         n = n or self.n_sample_points
         if not isinstance(n, list):
             n = [n] * self.d
@@ -182,10 +184,55 @@ class Sphere(Manifold2D):
         ],
     )
 
+    _full = False
     vis_n_points = [5, 20]
     base_functions_map = [
         Map("id", maps.smul_pi, maps.smul_pi_inverse),
         Map("id", maps.smul_2pi, maps.smul_2pi_inverse),
+    ]
+
+    def __init__(self, embedding, n_sample_points=10):
+        super().__init__(embedding, n_sample_points=n_sample_points)
+
+
+class Cylinder(Manifold2D):
+    name = "Cy"
+    manifold = Manifold(
+        M=[Interval("M_1", 0, 2 * pi), Interval("M_2", 0, 1)],
+        charts=[
+            Chart(
+                1,
+                [Interval("U_1_1", 0, 1.5 * pi), Interval("U_1_2", 0, 0.7)],
+                Map("x_1", identity, identity),
+            ),
+            Chart(
+                2,
+                [
+                    Interval("U_3_1", 0.5 * pi, 2 * pi),
+                    Interval("U_3_2", 0, 0.7),
+                ],
+                Map("x_2", identity, identity),
+            ),
+            Chart(
+                3,
+                [Interval("U_2_1", 0, 1.5 * pi), Interval("U_2_2", 0.3, 1)],
+                Map("x_3", identity, identity),
+            ),
+            Chart(
+                4,
+                [
+                    Interval("U_4_1", 0.5 * pi, 2 * pi),
+                    Interval("U_4_2", 0.3, 1),
+                ],
+                Map("x_4", identity, identity),
+            ),
+        ],
+    )
+
+    vis_n_points = [20, 5]
+    base_functions_map = [
+        Map("id", maps.smul_pi, maps.smul_pi_inverse),
+        Map("id", identity, identity),
     ]
 
     def __init__(self, embedding, n_sample_points=10):

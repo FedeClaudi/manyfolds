@@ -44,7 +44,12 @@ def identity(point):
 
 @sel_args
 def sin(point):
-    return (np.sin(point[0]),)
+    return (np.sin(point[0] * 2),)
+
+
+@sel_args
+def scaled_sin(point):
+    return (np.sin(point[0] * 6),)
 
 
 # ---------------------------------------------------------------------------- #
@@ -64,7 +69,7 @@ def second_only(point):
 
 @sel_args
 @normalize
-def scale_first(point, fact=50):
+def scale_first(point, fact=25):
     """
         Scales the second dimension wrt the first
     """
@@ -78,3 +83,9 @@ def scale_second(point, fact=10):
         Scales the second dimension wrt the first
     """
     return (1, fact)
+
+
+@sel_args
+@normalize
+def sin_on_sphere(point):
+    return (np.sin(2 * point[0]), 0)

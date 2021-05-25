@@ -6,4 +6,5 @@ from manifold.manifolds import (
     Plane,
     Torus,
     vectors_fields,
+    Cylinder,
 )

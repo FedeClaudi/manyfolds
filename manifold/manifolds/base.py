@@ -1,6 +1,9 @@
 import numpy as np
+from rich.table import Table
+from rich import print
+from loguru import logger
 
-from myterial import grey_dark, grey, blue, green
+from myterial import grey_dark, grey, blue, green, pink
 
 from manifold.topology import Point, Map
 from manifold.visualize import make_3D_ax
@@ -48,6 +51,27 @@ class BaseManifold:
     def M(self):
         """ short hand for self.manifold.M """
         return self.manifold.M
+
+    def print_embedding_bounds(self):
+        """
+            it prints the boundary values of the embedded manifold
+            along each dimensions
+        """
+        tb = Table(box=None, header_style=f"bold {pink}")
+        tb.add_column("Dimension", style="dim", justify="right")
+        tb.add_column("Bounds", justify="left")
+
+        lows, highs = [], []
+        for dim in range(self.embedded.shape[1]):
+            low = self.embedded[:, dim].min()
+            high = self.embedded[:, dim].max()
+            lows.append(low)
+            highs.append(high)
+            tb.add_row(str(dim), f"min: {low:.2f} | max: {high:.2f}")
+        print(tb)
+        logger.debug(
+            f"Manifold bounds: low: {np.min(lows):.2f} | max: {np.max(highs):.2f}"
+        )
 
     def _fill_points_data(self, points):
         """
