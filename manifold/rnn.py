@@ -19,7 +19,7 @@ class Trace:
 
 
 class RNN:
-    dt = 0.01
+    dt = 0.003
     sigma = tanh
 
     traces = []  # stores results of runnning RNN on initial conditions
@@ -33,6 +33,24 @@ class RNN:
         """
         self.manifold = manifold
         self.n_units = n_units
+
+    # def get_target_jacobian_at_point(self, point, tangent_vector):
+    #     '''
+    #         To define the target Jacobian's SVD we need an orthogonal
+    #         matrix of eigenvectors U and a diagonal matrix of eigenvalues S.
+
+    #         To construct U we get the rotation matrix that rotates the
+    #         standard basis of Rn to be aligned to the tangent vector at the point.
+    #         Then we use that on the matrix representing the standard basis and
+    #         we have our matrix of eigenvectors
+    #     '''
+    #     # stanrd basis
+    #     U = np.eye(len(tangent_vector))
+    #     U[:, 0] = tangent_vector
+
+    #     S = np.eye(len(tangent_vector)) *  (-1 / self.dt)
+    #     S[0, 0] = 1
+    #     return U, S
 
     def build_W(self, k=10, scale=1):
         """
@@ -69,8 +87,7 @@ class RNN:
                     for w, fn in zip(weights, point.base_functions)
                 ]
             )
-            vec = np.sum(bases, 0) * scale
-
+            vec = np.sum(bases, 0)
             # keep track for each point to build sys of equations
             v.append(vec)
             s.append(self.sigma(point.embedded))
@@ -79,7 +96,7 @@ class RNN:
         V = np.vstack(v).T
         S = np.linalg.pinv(np.vstack(s).T)
         noise = np.random.uniform(0, 1e-6, size=S.shape)
-        self.W = V @ (S + noise) / self.dt
+        self.W = V @ (S + noise) / self.dt * scale
 
         # self.W = np.linalg.solve(V, S)
         logger.debug(f"RNN connection matrix shape: {self.W.shape}")

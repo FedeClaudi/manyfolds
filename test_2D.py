@@ -2,9 +2,10 @@ import matplotlib.pyplot as plt
 
 from manifold import embeddings, Sphere, Plane, Torus, Cylinder
 from manifold.rnn import RNN
-from manifold import vectors_fields
 
-MANIFOLD = "cylinder"
+# from manifold import vectors_fields
+
+MANIFOLD = "sphere"
 if MANIFOLD == "plane":
     M = Plane(embeddings.plane_to_r3, n_sample_points=[3, 2])
     x_range = [0.1, 0.1]
@@ -19,7 +20,7 @@ elif MANIFOLD == "cylinder":
     x_range = [0.1, 0.05]
 
 # set vector field
-M.vectors_field = vectors_fields.first_only
+# M.vectors_field = vectors_fields.first_only
 
 # visualize in embedding
 ax = M.visualize_embedded()

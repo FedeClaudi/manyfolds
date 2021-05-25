@@ -32,6 +32,6 @@ M.visualize_base_functions_at_point(ax, x_range=0.05, scale=0.25)
 # M.visualize_charts()
 
 # visualize RNN dynamics
-# rnn.plot_traces(ax)
+rnn.plot_traces(ax)
 
 plt.show()
