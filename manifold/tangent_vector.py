@@ -1,8 +1,6 @@
 import numpy as np
 from loguru import logger
 
-# from manifold.manifolds.embeddings import TwoStepsEmbedding
-
 
 def take_derivative_at_point(arr, idx):
     """
@@ -25,19 +23,6 @@ def get_basis_tangent_vector(point, base_function, embedding):
     return take_derivative_at_point(
         base_function.embedded, base_function.embedded_point_index
     )
-    # if not isinstance(embedding, TwoStepsEmbedding):
-    #     # Simply get the embedding of the base function and take the derivative
-    #     return take_derivative_at_point(base_function.embedded, base_function.embedded_point_index)
-    # else:
-    #     # do the first embedding step
-    #     manifold_coords = base_function.get_manifold_coordinates(x_range=.2)
-    #     first_embedd = np.apply_along_axis(embedding.phi_1, 1, manifold_coords)
-
-    #     # take the derivative in first embedding space
-    #     vec = take_derivative_at_point(first_embedd, base_function.embedded_point_index)
-
-    #     # push forward to second embedding space
-    #     return embedding.mtx @ vec
 
 
 def get_tangent_vector(point, vectors_field, debug=False):

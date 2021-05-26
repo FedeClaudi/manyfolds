@@ -195,18 +195,24 @@ def prepare_circle_embedding(n=64):
 
 
 @parse
-def helix_to_rn(mtx, p):
+def helix_to_rn(v, m, n, p):
     """
         Embeds points of a helix manifold in high D space
         with a set of trigonometric functions
     """
-    embedded = mtx @ np.array(helix_to_r3(p))
+    if isinstance(p, Point):
+        p = p.coordinates[0]
+    embedded = cos(4 * pi * p) * v + sin(4 * pi * p) * m + p * n
     return tuple(embedded)
 
 
 def prepare_helix_to_rn(n=64):
-    mtx = np.random.rand(n, 3)
-    return partial(helix_to_rn, mtx)
+    x = ortho_group.rvs(n)
+    v = x[:, 0]
+    m = x[:, 1]
+    n = x[:, 2]
+
+    return partial(helix_to_rn, v, m, n)
 
 
 # ---------------------------------- sphere ---------------------------------- #

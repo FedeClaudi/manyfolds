@@ -6,7 +6,7 @@ from manifold.rnn import RNN
 
 from manifold import vectors_fields
 
-MANIFOLD = "plane"
+MANIFOLD = "sphere"
 N = 24
 K = 24
 
@@ -58,13 +58,13 @@ else:
 M.print_embedding_bounds()
 
 # set vector field
-M.vectors_field = vectors_fields.first_only
+M.vectors_field = vectors_fields.second_only
 
-# # fit and run RNN
+# fit and run RNN
 rnn = RNN(M, n_units=N)
 rnn.build_W(k=K, scale=0.1)
 rnn.run_points(n_seconds=0.1)
 
 
 viz = Visualizer(M, rnn=None, pca_sample_points=pca_sample_points)
-viz.show(x_range=0.2, scale=1)
+viz.show(x_range=0.2, scale=0.2)

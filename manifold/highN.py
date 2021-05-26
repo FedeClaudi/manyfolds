@@ -76,16 +76,15 @@ class Visualizer:
                 get_tangent_vector(
                     point, self.manifold.vectors_field, debug=True
                 )
-            )
+            ) * scale + np.array(point.embedded)
 
             # apply PCA and render
             point_lowd = self.pca.transform(
                 np.array(point.embedded).reshape(1, -1)
-            )
-            vec_lowd = self.pca.transform(vector.reshape(1, -1))[0] * scale
+            ).ravel()
+            vec_lowd = self.pca.transform(vector.reshape(1, -1)).ravel()
 
-            pts = np.vstack([point_lowd, point_lowd + vec_lowd])
-            self.actors.append(Tube(pts, r=0.03, c=green,))
+            self.actors.append(Tube([point_lowd, vec_lowd], r=0.03, c=green,))
 
     def visualize_rnn_traces(self):
         for trace in self.rnn.traces:

@@ -36,6 +36,11 @@ def identity(point):
     return tuple([1 for n in range(point.d)])
 
 
+@sel_args
+def negative(point):
+    return tuple([-1 for n in range(point.d)])
+
+
 # ---------------------------------------------------------------------------- #
 #                                      1D                                      #
 # ---------------------------------------------------------------------------- #
