@@ -6,7 +6,7 @@ from vedo import Tube
 
 from myterial import salmon, salmon_darker
 
-from manifold.maths import tanh
+from manifold.maths import tanh, unit_vector
 from manifold.visualize import make_palette
 from manifold.tangent_vector import get_tangent_vector
 
@@ -54,7 +54,7 @@ class RNN:
         logger.debug(f"RNN - building connectivity matrix with {k} points")
 
         # sample points
-        points = self.manifold.sample(n=k - 1, fill=True,)
+        points = self.manifold.sample(n=k - 1, fill=True, full=True)
         if len(points) != k and len(points) != k ** 2:
             raise ValueError(f"Got {len(points)} points with k={k}")
         # logger.debug([p.coordinates for p in points])
@@ -64,17 +64,20 @@ class RNN:
         s = []  # states through non-linearity
         for n, point in enumerate(points):
             # get the network's h_dot as a sum of base function tangent vectors
-            vec = get_tangent_vector(point, self.manifold.vectors_field)
+            vec = unit_vector(
+                get_tangent_vector(point, self.manifold.vectors_field)
+            )
 
             # keep track for each point to build sys of equations
             v.append(vec)
             s.append(self.sigma(point.embedded))
 
         # get W
-        V = np.vstack(v).T
+        V = np.linalg.pinv(np.vstack(v).T)
         S = np.linalg.pinv(np.vstack(s).T)
-        noise = np.random.uniform(0, 1e-6, size=S.shape)
-        self.W = V @ (S + noise) / self.dt * scale
+        noise = np.random.uniform(0, 1e-3, size=S.shape)
+        # self.W = V @ (S + noise) / self.dt * scale
+        self.W = np.linalg.lstsq(V + noise, S)[0]
 
         # self.W = np.linalg.solve(V, S)
         logger.debug(f"RNN connection matrix shape: {self.W.shape}")

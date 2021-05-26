@@ -5,7 +5,6 @@ from vedo import show, Spheres, Tube, recoSurface, Line
 from myterial import grey, blue, salmon, green, grey_dark
 
 from manifold.tangent_vector import get_tangent_vector
-from manifold.maths import unit_vector
 
 
 class Visualizer:
@@ -50,7 +49,7 @@ class Visualizer:
 
         if self.manifold.d > 1:
             self.actors.append(
-                recoSurface(self.embedded_lowd, dims=(20, 20, 20), radius=0.5)
+                recoSurface(self.embedded_lowd, dims=(50, 50, 50), radius=0.1)
                 .c(grey)
                 .clean()
                 .alpha(0.8)
@@ -72,10 +71,8 @@ class Visualizer:
                 self.actors.append(Tube(low_d, r=0.02, c=grey_dark,))
 
             # get tangent vector as sum of basis
-            vector = unit_vector(
-                get_tangent_vector(
-                    point, self.manifold.vectors_field, debug=True
-                )
+            vector = get_tangent_vector(
+                point, self.manifold.vectors_field, debug=True
             ) * scale + np.array(point.embedded)
 
             # apply PCA and render

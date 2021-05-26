@@ -3,7 +3,7 @@ from manifold.rnn import RNN
 
 # from manifold import vectors_fields
 
-MANIFOLD = "helix"
+MANIFOLD = "line"
 
 if MANIFOLD == "line":
     M = Line(embeddings.line_to_r3, n_sample_points=3)

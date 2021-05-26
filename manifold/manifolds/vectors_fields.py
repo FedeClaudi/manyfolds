@@ -73,7 +73,7 @@ def second_only(point):
 
 @sel_args
 @normalize
-def scale_first(point, fact=25):
+def scale_first(point, fact=5):
     """
         Scales the second dimension wrt the first
     """
@@ -105,7 +105,7 @@ def sphere_equator(point):
     """
         Pushes the dynamics towards the equator of the sphere
     """
-    return (np.cos(point.coordinates[0]), 0)
+    return (np.cos(point.coordinates[0]) ** 2, 0)
 
 
 @sel_args

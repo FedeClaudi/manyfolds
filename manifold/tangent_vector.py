@@ -1,6 +1,8 @@
 import numpy as np
 from loguru import logger
 
+from manifold.maths import unit_vector
+
 
 def take_derivative_at_point(arr, idx):
     """
@@ -13,8 +15,9 @@ def take_derivative_at_point(arr, idx):
     derivative = np.mean(np.diff(arr, axis=0)[idx : idx + 1, :], 0)
     if np.linalg.norm(derivative) == 0:
         logger.warning(f"Tangent vector for base function is vanishing")
-        derivative += 0.001
-    derivative /= np.linalg.norm(derivative)
+        # derivative += 1e-10
+    else:
+        derivative /= np.linalg.norm(derivative)
 
     return derivative.T
 
@@ -31,7 +34,10 @@ def get_tangent_vector(point, vectors_field, debug=False):
         the basis vectors using coefficients from a vectors field
     """
     weights = vectors_field(point)
-    basis = np.vstack([fn.tangent_vector for fn in point.base_functions])
+    basis = []
+    for fn in point.base_functions:
+        basis.append(unit_vector(fn.tangent_vector))
+    basis = np.vstack(basis)
 
     if debug:
         logger.debug(

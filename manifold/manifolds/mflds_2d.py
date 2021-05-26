@@ -252,7 +252,7 @@ class Torus(Manifold2D):
         ],
     )
 
-    _full = False
+    # _full = False
     vis_n_points = [10, 50]
 
     def __init__(self, embedding, n_sample_points=10):
