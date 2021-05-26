@@ -172,10 +172,6 @@ class Sphere(Manifold2D):
 
     _full = False
     vis_n_points = [5, 20]
-    base_functions_map = [
-        Map("id", maps.smul_pi, maps.smul_pi_inverse),
-        Map("id", maps.smul_2pi, maps.smul_2pi_inverse),
-    ]
 
     def __init__(self, embedding, n_sample_points=10):
         super().__init__(embedding, n_sample_points=n_sample_points)
@@ -232,45 +228,32 @@ class Torus(Manifold2D):
         charts=[
             Chart(
                 1,
-                [
-                    Interval("U_1_1", 0, 1.5 * pi),
-                    Interval("U_1_2", 0, 1.5 * pi),
-                ],
-                Map("x_1", identity, identity),
+                [Interval("U_1_1", 0, pi), Interval("U_1_2", 0, pi)],
+                Map("x_1", maps.smul_pi_inverse, maps.smul_pi),
             ),
             Chart(
                 2,
-                [
-                    Interval("U_3_1", 0.5, 2 * pi),
-                    Interval("U_3_2", 0, 1.5 * pi),
-                ],
-                Map("x_2", identity, identity),
+                [Interval("U_2_1", pi, 2 * pi), Interval("U_2_2", 0, pi)],
+                Map("x_1", maps.smul_pi_inverse, maps.smul_pi),
             ),
             Chart(
                 3,
-                [
-                    Interval("U_2_1", 0, 1.5 * pi),
-                    Interval("U_2_2", 0.5, 2 * pi),
-                ],
-                Map("x_3", identity, identity),
+                [Interval("U_3_1", 0, pi), Interval("U_3_2", pi, 2 * pi)],
+                Map("x_1", maps.sphere_U_2, maps.sphere_U_2_inverse),
             ),
             Chart(
                 4,
                 [
-                    Interval("U_4_1", 0.5, 2 * pi),
-                    Interval("U_4_2", 0.5, 2 * pi),
+                    Interval("U_3_1", pi, 2 * pi, left_open=True),
+                    Interval("U_3_2", pi, 2 * pi, left_open=True),
                 ],
-                Map("x_4", identity, identity),
+                Map("x_2", maps.torus_U_4, maps.torus_U_4_inverse),
             ),
         ],
     )
 
+    _full = False
     vis_n_points = [10, 50]
-
-    base_functions_map = [
-        Map("id", maps.smul_2pi, maps.smul_2pi_inverse),
-        Map("id", maps.smul_2pi, maps.smul_2pi_inverse),
-    ]
 
     def __init__(self, embedding, n_sample_points=10):
         super().__init__(embedding, n_sample_points=n_sample_points)

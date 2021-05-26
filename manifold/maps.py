@@ -116,3 +116,35 @@ def sphere_U_2_inverse(x):
     x[:, 1] = x[:, 1] * pi + pi
 
     return x
+
+
+@return_many
+def torus_U_2(x):
+    x0 = (x[0] - pi) / pi
+    x1 = x[1] / pi
+
+    return tuple([x0, x1])
+
+
+@return_many
+def torus_U_2_inverse(x):
+    x[:, 1] = x[:, 1] * pi
+    x[:, 0] = x[:, 0] * pi + pi
+
+    return x
+
+
+@return_many
+def torus_U_4(x):
+    x0 = (x[0] - pi) / pi
+    x1 = (x[1] - pi) / pi
+
+    return tuple([x0, x1])
+
+
+@return_many
+def torus_U_4_inverse(x):
+    x[:, 0] = x[:, 0] * pi + pi
+    x[:, 1] = x[:, 1] * pi + pi
+
+    return x

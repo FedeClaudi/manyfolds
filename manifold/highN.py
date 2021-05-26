@@ -1,10 +1,11 @@
 from sklearn.decomposition import PCA
 import numpy as np
-from vedo import show, Spheres, Tube, recoSurface
+from vedo import show, Spheres, Tube, recoSurface, Line
 
 from myterial import grey, blue, salmon, green, grey_dark
 
-from manifold.topology import Point
+from manifold.tangent_vector import get_tangent_vector
+from manifold.maths import unit_vector
 
 
 class Visualizer:
@@ -26,11 +27,10 @@ class Visualizer:
         """
             Fits a PCA model to N sampled from the manifold's embedding
         """
-        embedded_points_pca = [
-            Point(self.manifold.embedding(p), self.manifold.embedding)
-            for p in self.manifold.sample(n=self.pca_sample_points, full=True)
-        ]
-        embedded = np.vstack([p.coordinates for p in embedded_points_pca])
+        embedded_points_pca = self.manifold.sample(
+            n=self.pca_sample_points, full=True, fill=True
+        )
+        embedded = np.vstack([p.embedded for p in embedded_points_pca])
 
         self.pca = PCA(n_components=3).fit(embedded)
         self.embedded_lowd = self.pca.transform(embedded)
@@ -40,41 +40,51 @@ class Visualizer:
             lowd_coords = self.pca.transform(
                 np.array(point.embedded).reshape(1, -1)
             )
-            self.actors.append(Spheres(lowd_coords, r=0.15, c=blue,))
+            self.actors.append(
+                Spheres(
+                    lowd_coords,
+                    r=0.05 if self.manifold.d > 1 else 0.05,
+                    c=blue,
+                )
+            )
 
-        self.actors.append(
-            recoSurface(self.embedded_lowd, dims=(20, 20, 20), radius=0.5)
-            .c(grey)
-            .clean()
-            .alpha(0.8)
-        )
+        if self.manifold.d > 1:
+            self.actors.append(
+                recoSurface(self.embedded_lowd, dims=(20, 20, 20), radius=0.5)
+                .c(grey)
+                .clean()
+                .alpha(0.8)
+                .wireframe()
+                .lw(1)
+            )
+        else:
+            self.actors.append(Line(self.embedded_lowd, c=grey, lw=4))
 
     def visualize_tangent_vectors(self, scale=1, x_range=0.05):
         if not isinstance(x_range, list):
             x_range = [x_range] * self.manifold.d
 
         for point in self.manifold.points:
-            weights = self.manifold.vectors_field(point)
-            vectors = []
-            for n, fn in enumerate(point.base_functions):
+            # draw base functions
+            for fn in point.base_functions:
                 fn.embedd(x_range=x_range[fn.dim_idx])
-                vectors.append(fn.tangent_vector * weights[n])
-
                 low_d = self.pca.transform(fn.embedded)
                 self.actors.append(Tube(low_d, r=0.02, c=grey_dark,))
 
+            # get tangent vector as sum of basis
+            vector = unit_vector(
+                get_tangent_vector(
+                    point, self.manifold.vectors_field, debug=True
+                )
+            )
+
+            # apply PCA and render
             point_lowd = self.pca.transform(
                 np.array(point.embedded).reshape(1, -1)
-            ).T
-            vector = np.sum(np.vstack(vectors), 0)
-            vec_lowd = self.pca.transform(vector.reshape(-1, 1).T)[0] * scale
-            pts = np.vstack(
-                [
-                    [point_lowd[0][0], (point_lowd[0] + vec_lowd[0])[0]],
-                    [point_lowd[1][0], (point_lowd[1] + vec_lowd[1])[0]],
-                    [point_lowd[2][0], (point_lowd[2] + vec_lowd[2])[0]],
-                ]
-            ).T
+            )
+            vec_lowd = self.pca.transform(vector.reshape(1, -1))[0] * scale
+
+            pts = np.vstack([point_lowd, point_lowd + vec_lowd])
             self.actors.append(Tube(pts, r=0.03, c=green,))
 
     def visualize_rnn_traces(self):
@@ -97,7 +107,7 @@ class Visualizer:
             focalPoint=[0.115, -0.647, 0.251],
             viewup=[-0.039, 0.595, 0.802],
             distance=14,
-            # clippingRange = [7.661, 22.088],
+            clippingRange=[2.661, 22.088],
         )
 
         show(

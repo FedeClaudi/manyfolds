@@ -1,3 +1,7 @@
+from pyinspect import install_traceback
+
+install_traceback()
+
 from manifold.manifolds import (
     embeddings,
     Line,

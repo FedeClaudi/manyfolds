@@ -1,8 +1,9 @@
 from manifold import embeddings, Line, Circle
 from manifold.rnn import RNN
-from manifold import vectors_fields
 
-MANIFOLD = "line"
+# from manifold import vectors_fields
+
+MANIFOLD = "helix"
 
 if MANIFOLD == "line":
     M = Line(embeddings.line_to_r3, n_sample_points=3)
@@ -14,7 +15,7 @@ elif MANIFOLD == "circle":
 M.print_embedding_bounds()
 
 # define vector field
-M.vectors_field = vectors_fields.sin
+# M.vectors_field = vectors_fields.sin
 
 
 # create RNN

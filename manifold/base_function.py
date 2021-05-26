@@ -1,24 +1,8 @@
 from dataclasses import dataclass
 import numpy as np
-from loguru import logger
-
 
 from manifold.topology import Point, Interval, Map
-
-
-def take_derivative_at_point(arr, idx):
-    """
-        Takes the derivative of a function's image
-        at a point
-    """
-
-    derivative = np.diff(arr, axis=0)[idx, :]
-    if np.linalg.norm(derivative) == 0:
-        logger.warning(f"Tangent vector for base function is vanishing")
-        derivative += 0.001
-    derivative /= np.linalg.norm(derivative)
-
-    return derivative.T
+from manifold.tangent_vector import get_basis_tangent_vector
 
 
 @dataclass
@@ -34,26 +18,20 @@ class BaseFunction:
 
     embedded = None
     dim_idx = 0
+    N = 100  # number of samples over the domain
 
-    def embedd(self, x_range=0.1):
-        """
-            Embeds the function's domain in embedding space
-            using the inverse of the point's chart's map and the 
-            manifold embedding map
-        """
-        N = 100  # number of samples over the domain
-        self.embedded_point_index = (
-            int(N / 2) - 1
-        )  # index of the embedding point corresponding to the function's point
+    @property
+    def embedded_point_index(self):
+        return int(self.N / 2) - 1
 
+    def get_manifold_coordinates(self, x_range=0.1):
         # get domain of the function by using the inverse map
         point_in_domain = self.f.inverse(self.point.chart_coordinates)
-
         _range = x_range / 2
         domain = np.array(
             Interval(
                 "", point_in_domain - _range, point_in_domain + _range
-            ).sample(n=N)
+            ).sample(n=self.N)
         )
 
         # get points in the embedding
@@ -64,6 +42,16 @@ class BaseFunction:
         manifold_coords = self.point.chart.x.inverse(chart_coords).reshape(
             -1, 1
         )
+
+        return manifold_coords
+
+    def embedd(self, x_range=0.1):
+        """
+            Embeds the function's domain in embedding space
+            using the inverse of the point's chart's map and the 
+            manifold embedding map
+        """
+        manifold_coords = self.get_manifold_coordinates()
 
         # 3. use the embedding map to the the coordinates in the embedding space
         self.embedded = np.apply_along_axis(
@@ -77,8 +65,9 @@ class BaseFunction:
         """
         if self.embedded is None:
             self.embedd()
-        return take_derivative_at_point(
-            self.embedded, self.embedded_point_index
+
+        return get_basis_tangent_vector(
+            self.point, self, self.point.embedding_map
         )
 
 
@@ -107,7 +96,7 @@ class BaseFunction2D:
             N / 2
         )  # index of the embedding point corresponding to the function's point
 
-        # get domain of the function by using the inverse map
+        # get domain of the function by using the inverse map and get wehere the point is in the domain
         point_in_domain = self.f.inverse(self.point.chart_coordinates)[
             self.dim_idx
         ]
@@ -121,7 +110,7 @@ class BaseFunction2D:
 
         # get points in the embedding
         # 1. map the domain of f to the chart's local coordinates
-        # keep one dymension and vary the other
+        # keep one dimension fixed and vary the other
         fixed = self.point.chart_coordinates[1 - self.dim_idx]
         chart_coords = np.ones((N, self.point.d)) * fixed
         chart_coords[:, self.dim_idx] = self.f(domain)[:N]
@@ -141,6 +130,7 @@ class BaseFunction2D:
         """
         if self.embedded is None:
             self.embedd()
-        return take_derivative_at_point(
-            self.embedded, self.embedded_point_index
+
+        return get_basis_tangent_vector(
+            self.point, self, self.point.embedding_map
         )

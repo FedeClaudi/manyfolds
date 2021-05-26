@@ -8,6 +8,7 @@ from myterial import salmon, salmon_darker
 
 from manifold.maths import tanh
 from manifold.visualize import make_palette
+from manifold.tangent_vector import get_tangent_vector
 
 
 @dataclass
@@ -36,24 +37,6 @@ class RNN:
         self.manifold = manifold
         self.n_units = n_units
 
-    # def get_target_jacobian_at_point(self, point, tangent_vector):
-    #     '''
-    #         To define the target Jacobian's SVD we need an orthogonal
-    #         matrix of eigenvectors U and a diagonal matrix of eigenvalues S.
-
-    #         To construct U we get the rotation matrix that rotates the
-    #         standard basis of Rn to be aligned to the tangent vector at the point.
-    #         Then we use that on the matrix representing the standard basis and
-    #         we have our matrix of eigenvectors
-    #     '''
-    #     # stanrd basis
-    #     U = np.eye(len(tangent_vector))
-    #     U[:, 0] = tangent_vector
-
-    #     S = np.eye(len(tangent_vector)) *  (-1 / self.dt)
-    #     S[0, 0] = 1
-    #     return U, S
-
     def build_W(self, k=10, scale=1):
         """
             For each sample point on the manifold we have 
@@ -81,15 +64,8 @@ class RNN:
         s = []  # states through non-linearity
         for n, point in enumerate(points):
             # get the network's h_dot as a sum of base function tangent vectors
-            weights = self.manifold.vectors_field(point)
+            vec = get_tangent_vector(point, self.manifold.vectors_field)
 
-            bases = np.vstack(
-                [
-                    fn.tangent_vector * w
-                    for w, fn in zip(weights, point.base_functions)
-                ]
-            )
-            vec = np.sum(bases, 0)
             # keep track for each point to build sys of equations
             v.append(vec)
             s.append(self.sigma(point.embedded))
@@ -115,6 +91,10 @@ class RNN:
         for n, step in enumerate(range(n_steps)):
             h = self.step(h)
             trace[n, :] = h
+
+            if np.linalg.norm(h) >= 3 and n > 1:
+                trace = trace[:n, :]
+                break  # too far from origin
 
         self.traces.append(Trace(trace[0, :], trace))
 

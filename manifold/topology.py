@@ -106,3 +106,9 @@ class Chart:
 class Manifold:
     M: Union[Interval, list]
     charts: list
+
+    def contains(self, p):
+        if isinstance(self.M, Interval):
+            return self.M.contains(p)
+        else:
+            return np.all(interval.contains(p) for interval in self.M)

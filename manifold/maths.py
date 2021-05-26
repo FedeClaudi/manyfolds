@@ -2,6 +2,12 @@ import numpy as np
 import itertools
 
 
+def ortho_normal_matrix(n, m):
+    H = np.random.rand(n, m)
+    u, s, vh = np.linalg.svd(H, full_matrices=False)
+    return u @ vh
+
+
 def ReLU(_, x):
     x = np.array(x)
     return x * (x > 0)

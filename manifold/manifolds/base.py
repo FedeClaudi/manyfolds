@@ -9,6 +9,8 @@ from myterial import grey_dark, grey, blue, green, pink
 from manifold.topology import Point, Map
 from manifold.maps import identity
 from manifold.manifolds import vectors_fields
+from manifold.tangent_vector import get_tangent_vector
+from manifold.maths import unit_vector
 
 
 class BaseManifold:
@@ -162,17 +164,15 @@ class BaseManifold:
             x_range = [x_range] * self.d
 
         for point in self.points:
-            weights = self.vectors_field(point)
-            vectors = []
-            for n, fn in enumerate(point.base_functions):
-                # plot the function
-                fn.embedd(x_range=x_range[fn.dim_idx])
+            # plot the base function
+            for fn in point.base_functions:
+                fn.embedd()
                 self.actors.append(Tube(fn.embedded, r=0.02, c=grey_dark,))
 
-                # plot the scaled tangent vector at the point
-                vectors.append(fn.tangent_vector * scale * weights[n])
-
-            vector = np.sum(np.vstack(vectors), 0)
+            vector = (
+                unit_vector(get_tangent_vector(point, self.vectors_field))
+                * scale
+            )
             pts = np.vstack(
                 [
                     [fn.point.embedded[0], fn.point.embedded[0] + vector[0]],

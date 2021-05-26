@@ -5,6 +5,7 @@ from scipy.stats import ortho_group
 from functools import partial
 
 from manifold.topology import Point
+from manifold.maths import ortho_normal_matrix
 
 # --------------------------------- wrappers --------------------------------- #
 
@@ -99,14 +100,14 @@ def plane_to_r3_flat(p0, p1):
 
 @parse2D
 def plane_to_r3(p0, p1):
-    return (p0, sin(p1), p1 * p0)
+    return (p0, sin(p1), (p1 - p0) ** 2)
 
 
 # ----------------------------------- torus ---------------------------------- #
 @parse2D
 def torus_to_r3(p0, p1):
     R = 0.5  # torus center -> tube center
-    r = 0.25  # tubre radius
+    r = 0.25  # tube radius
     return (
         (R + r * cos(p0)) * cos(p1),
         (R + r * cos(p0)) * sin(p1),
@@ -130,22 +131,21 @@ def cylinder_to_r3_as_cone(p0, p1):
 #                                    R^N > 3                                   #
 # ---------------------------------------------------------------------------- #
 
+
+class TwoStepsEmbedding:
+    def __init__(self, phi_1, n):
+        # initialize projection matrix
+        self.mtx = ortho_group.rvs(n)[:, :3]
+        self.phi_1 = phi_1
+
+    def __call__(self, p):
+        embedded = self.mtx @ np.array(self.phi_1(p))
+        return embedded
+
+
 # ----------------------------------- line ----------------------------------- #
-def line_to_rn(mtx, p):
-    """
-        Embeds points of a line manifold in high D space
-        with a set of trigonometric functions
-    """
-    # mtx = np.eye(mtx.shape[0])
-    # mtx = np.zeros_like(mtx)
-    # mtx[:3, :3] = np.eye(3)
-    embedded = mtx @ np.array(line_to_r3(p))
-    return tuple(embedded)
-
-
 def prepare_line_to_rn(n=64):
-    mtx = ortho_group.rvs(n)[:, :3]
-    return partial(line_to_rn, mtx)
+    return TwoStepsEmbedding(line_to_r3, n)
 
 
 @parse
@@ -240,8 +240,8 @@ def plane_to_rn(mtx, p):
 
 
 def prepare_plane_to_rn(n=64):
-    mtx = np.random.rand(n, 3)
-
+    # mtx = ortho_group.rvs(n)[:, :3]
+    mtx = ortho_normal_matrix(n, 3)
     return partial(plane_to_rn, mtx)
 
 
@@ -257,8 +257,7 @@ def flat_plane_to_rn(mtx, p):
 
 
 def prepare_flat_plane_to_rn(n=64):
-    mtx = np.random.rand(n, 3)
-
+    mtx = ortho_group.rvs(n)[:, :3]
     return partial(flat_plane_to_rn, mtx)
 
 
@@ -275,8 +274,7 @@ def torus_to_rn(mtx, p):
 
 
 def prepare_torus_to_rn(n=64):
-    mtx = np.random.rand(n, 3)
-
+    mtx = ortho_group.rvs(n)[:, :3]
     return partial(torus_to_rn, mtx)
 
 
@@ -293,6 +291,5 @@ def cylinder_to_rn(mtx, p):
 
 
 def prepare_cylinder_to_rn(n=64):
-    mtx = np.random.rand(n, 3)
-
+    mtx = ortho_group.rvs(n)[:, :3]
     return partial(cylinder_to_rn, mtx)
