@@ -110,6 +110,8 @@ class Manifold2D(BaseManifold):
         axes[4].set(title="Chart 3")
         axes[5].set(title="Chart 4")
 
+        plt.show()
+
 
 # ---------------------------------------------------------------------------- #
 #                                   MANIFOLDS                                  #
@@ -157,29 +159,13 @@ class Sphere(Manifold2D):
         charts=[
             Chart(
                 1,
-                [
-                    Interval("U_1_1", 0, 0.7 * pi),
-                    Interval("U_1_2", 0, 1.5 * pi),
-                ],
-                Map("x_1", identity, identity),
+                [Interval("U_1_1", 0, pi), Interval("U_1_2", 0, pi)],
+                Map("x_1", maps.smul_pi_inverse, maps.smul_pi),
             ),
             Chart(
                 2,
-                [Interval("U_3_1", 0.3, pi), Interval("U_3_2", 0, 1.5 * pi)],
-                Map("x_2", identity, identity),
-            ),
-            Chart(
-                3,
-                [Interval("U_2_1", 0.3, pi), Interval("U_2_2", 0.5, 2 * pi)],
-                Map("x_3", identity, identity),
-            ),
-            Chart(
-                4,
-                [
-                    Interval("U_4_1", 0, 0.7 * pi),
-                    Interval("U_4_2", 0.5, 2 * pi),
-                ],
-                Map("x_4", identity, identity),
+                [Interval("U_2_1", 0, pi), Interval("U_2_2", pi, 2 * pi)],
+                Map("x_2", maps.sphere_U_2, maps.sphere_U_2_inverse),
             ),
         ],
     )
@@ -240,7 +226,7 @@ class Cylinder(Manifold2D):
 
 
 class Torus(Manifold2D):
-    name = "R2"
+    name = "T2"
     manifold = Manifold(
         M=[Interval("M_1", 0, 2 * pi), Interval("M_2", 0, 2 * pi)],
         charts=[

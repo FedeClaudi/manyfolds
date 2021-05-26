@@ -2,16 +2,17 @@ import numpy as np
 from rich.table import Table
 from rich import print
 from loguru import logger
+from vedo import Sphere, Line, show, Tube, Torus, recoSurface
 
 from myterial import grey_dark, grey, blue, green, pink
 
 from manifold.topology import Point, Map
-from manifold.visualize import make_3D_ax
 from manifold.maps import identity
 from manifold.manifolds import vectors_fields
 
 
 class BaseManifold:
+    actors = []  # for visualization
     # maps used by base functions
     base_functions_map = Map("id", identity, identity)
 
@@ -117,45 +118,40 @@ class BaseManifold:
         )
 
     def visualize_embedded(self):
-        ax = make_3D_ax()
 
         for p in self.points:
-            ax.scatter(
-                *p.embedded,
-                s=100,
-                color=blue,
-                zorder=2,
-                edgecolors=grey,
-                lw=0.5,
-            )
+            self.actors.append(Sphere(p.embedded, r=0.05, c=blue, res=12,))
 
         if self.d == 1:
-            ax.plot(
-                self.embedded[:, 0],
-                self.embedded[:, 1],
-                self.embedded[:, 2],
-                lw=1.5,
-                color=grey,
-                zorder=-1,
-            )
+            self.actors.append(Line(self.embedded, lw=4, c=grey,))
         else:
-            for n in range(self.vis_n_points[1]):
-                idxs = [
-                    k + self.vis_n_points[0] * n
-                    for k in range(self.vis_n_points[0])
-                    if k + self.vis_n_points[0] * n < self.embedded.shape[0]
-                ]
-                ax.plot(
-                    self.embedded[idxs, 0],
-                    self.embedded[idxs, 1],
-                    self.embedded[idxs, 2],
-                    lw=1.5,
-                    color=grey,
-                    zorder=-1,
-                )
-        return ax
+            if self.name == "S2":
+                # plot a sphere
+                self.actors.append(Sphere(r=0.75, c=grey).wireframe())
 
-    def visualize_base_functions_at_point(self, ax, x_range=0.2, scale=0.2):
+            elif self.name == "Cy":
+                # plot a cylinder
+                raise NotImplementedError
+
+            elif self.name == "T2":
+                # plot a torus
+                self.actors.append(
+                    Torus(r=0.5, thickness=0.25, c="grey", res=20,)
+                    .wireframe()
+                    .lw(1)
+                )
+
+            else:
+                # plot points
+                self.actors.append(
+                    recoSurface(self.embedded, dims=(20, 20, 20), radius=0.5)
+                    .c(grey)
+                    .wireframe()
+                    .lw(1)
+                    .clean()
+                )
+
+    def visualize_base_functions_at_point(self, x_range=0.2, scale=0.2):
         """
             For a given point in the manifold it projects the base functions
             in the image of the points chart to the embedding. This is done by taking each 
@@ -171,25 +167,35 @@ class BaseManifold:
             for n, fn in enumerate(point.base_functions):
                 # plot the function
                 fn.embedd(x_range=x_range[fn.dim_idx])
-                ax.plot(
-                    fn.embedded[:, 0],
-                    fn.embedded[:, 1],
-                    fn.embedded[:, 2],
-                    lw=5,
-                    color=grey_dark,
-                )
+                self.actors.append(Tube(fn.embedded, r=0.02, c=grey_dark,))
 
                 # plot the scaled tangent vector at the point
                 vectors.append(fn.tangent_vector * scale * weights[n])
 
             vector = np.sum(np.vstack(vectors), 0)
-            ax.plot(
-                [fn.point.embedded[0], fn.point.embedded[0] + vector[0]],
-                [fn.point.embedded[1], fn.point.embedded[1] + vector[1]],
-                [fn.point.embedded[2], fn.point.embedded[2] + vector[2]],
-                lw=4,
-                color=green,
-            )
+            pts = np.vstack(
+                [
+                    [fn.point.embedded[0], fn.point.embedded[0] + vector[0]],
+                    [fn.point.embedded[1], fn.point.embedded[1] + vector[1]],
+                    [fn.point.embedded[2], fn.point.embedded[2] + vector[2]],
+                ]
+            ).T
+
+            self.actors.append(Tube(pts, r=0.03, c=green,))
+
+    def show(self):
+        for actor in self.actors:
+            actor.lighting("plastic")
+
+        camera = dict(
+            pos=[-0.025, -5.734, 4.018],
+            focalPoint=[0.115, -0.647, 0.251],
+            viewup=[-0.039, 0.595, 0.802],
+            distance=6.331,
+            clippingRange=[0.032, 32.461],
+        )
+
+        show(*self.actors, size="full", title=self.name, axes=1, camera=camera)
 
     # ------------------------ to implement in subclasses ------------------------ #
     def project_with_charts(self, points=None):

@@ -1,5 +1,3 @@
-import matplotlib.pyplot as plt
-
 from manifold import embeddings, Line, Circle
 from manifold.rnn import RNN
 from manifold import vectors_fields
@@ -25,13 +23,13 @@ rnn.build_W(k=24, scale=0.01)
 rnn.run_points(n_seconds=2)
 
 # visualize in embedding
-ax = M.visualize_embedded()
-M.visualize_base_functions_at_point(ax, x_range=0.05, scale=0.25)
+M.visualize_embedded()
+M.visualize_base_functions_at_point(x_range=0.07, scale=0.25)
 
 # visualize charts
 # M.visualize_charts()
 
 # visualize RNN dynamics
-rnn.plot_traces(ax)
+rnn.plot_traces()
 
-plt.show()
+M.show()

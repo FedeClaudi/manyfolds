@@ -1,8 +1,19 @@
 import matplotlib.pyplot as plt
+import numpy as np
+from vedo.colors import hex2rgb, rgb2hex
 
-# from myterial import blue_grey, grey_dark, grey
 
 blue = "#c3c3db"
+
+
+def make_palette(c1, c2, N):
+    c1 = np.array(hex2rgb(c1))
+    c2 = np.array(hex2rgb(c2))
+    cols = []
+    for f in np.linspace(0, 1, N, endpoint=True):
+        c = c1 * (1 - f) + c2 * f
+        cols.append(rgb2hex(c))
+    return cols
 
 
 def make_3D_ax(nolim=True):

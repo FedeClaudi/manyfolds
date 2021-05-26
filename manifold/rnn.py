@@ -2,10 +2,12 @@ import numpy as np
 from loguru import logger
 from dataclasses import dataclass
 from rich.progress import track
+from vedo import Tube
 
-from myterial import salmon
+from myterial import salmon, salmon_darker
 
 from manifold.maths import tanh
+from manifold.visualize import make_palette
 
 
 @dataclass
@@ -129,13 +131,7 @@ class RNN:
                 np.array(point.embedded), n_seconds=n_seconds
             )
 
-    def plot_traces(self, ax, skip=1):
+    def plot_traces(self, skip=1):
+        colors = make_palette(salmon_darker, salmon, len(self.traces[0].trace))
         for trace in self.traces:
-            ax.plot(
-                trace.trace[:, 0][::skip],
-                trace.trace[:, 1][::skip],
-                trace.trace[:, 2][::skip],
-                c=salmon,
-                lw=3,
-                alpha=0.75,
-            )
+            self.manifold.actors.append(Tube(trace.trace, c=colors, r=0.005,))

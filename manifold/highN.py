@@ -1,10 +1,10 @@
 from sklearn.decomposition import PCA
 import numpy as np
+from vedo import show, Spheres, Tube, recoSurface
 
 from myterial import grey, blue, salmon, green, grey_dark
 
 from manifold.topology import Point
-from manifold.visualize import make_3D_ax
 
 
 class Visualizer:
@@ -13,6 +13,8 @@ class Visualizer:
         data from embeddings in N >> 3 using 
         dimensionality reduction techniques.
     """
+
+    actors = []
 
     def __init__(self, manifold, rnn=None, pca_sample_points=200):
         self.pca_sample_points = pca_sample_points
@@ -33,53 +35,21 @@ class Visualizer:
         self.pca = PCA(n_components=3).fit(embedded)
         self.embedded_lowd = self.pca.transform(embedded)
 
-    def visualize_manifold(self, ax_lims=True):
-        ax = make_3D_ax(nolim=ax_lims)
-        ax.set(xlabel="PC 1", ylabel="PC 2", zlabel="PC 3")
-
+    def visualize_manifold(self):
         for point in self.manifold.points:
             lowd_coords = self.pca.transform(
                 np.array(point.embedded).reshape(1, -1)
             )
-            ax.scatter(
-                *lowd_coords.T,
-                s=100,
-                color=blue,
-                zorder=2,
-                edgecolors=grey,
-                lw=0.5,
-                alpha=0.5,
-            )
+            self.actors.append(Spheres(lowd_coords, r=0.15, c=blue,))
 
-        if self.manifold.d == 1:
-            ax.plot(
-                self.embedded_lowd[:, 0],
-                self.embedded_lowd[:, 1],
-                self.embedded_lowd[:, 2],
-                lw=1.5,
-                color=grey,
-                zorder=-1,
-            )
-        else:
-            for n in range(self.pca_sample_points):
-                idxs = [
-                    k + self.pca_sample_points * n
-                    for k in range(self.pca_sample_points)
-                    if k + self.pca_sample_points * n
-                    < self.embedded_lowd.shape[0]
-                ]
-                ax.plot(
-                    self.embedded_lowd[idxs, 0],
-                    self.embedded_lowd[idxs, 1],
-                    self.embedded_lowd[idxs, 2],
-                    lw=1.5,
-                    color=grey,
-                    zorder=-1,
-                )
+        self.actors.append(
+            recoSurface(self.embedded_lowd, dims=(20, 20, 20), radius=0.5)
+            .c(grey)
+            .clean()
+            .alpha(0.8)
+        )
 
-        return ax
-
-    def visualize_tangent_vectors(self, ax, scale=1, x_range=0.05):
+    def visualize_tangent_vectors(self, scale=1, x_range=0.05):
         if not isinstance(x_range, list):
             x_range = [x_range] * self.manifold.d
 
@@ -91,39 +61,49 @@ class Visualizer:
                 vectors.append(fn.tangent_vector * weights[n])
 
                 low_d = self.pca.transform(fn.embedded)
-                ax.plot(
-                    low_d[:, 0],
-                    low_d[:, 1],
-                    low_d[:, 2],
-                    lw=5,
-                    color=grey_dark,
-                )
+                self.actors.append(Tube(low_d, r=0.02, c=grey_dark,))
 
             point_lowd = self.pca.transform(
                 np.array(point.embedded).reshape(1, -1)
             ).T
             vector = np.sum(np.vstack(vectors), 0)
             vec_lowd = self.pca.transform(vector.reshape(-1, 1).T)[0] * scale
-            ax.plot(
-                [point_lowd[0][0], (point_lowd[0] + vec_lowd[0])[0]],
-                [point_lowd[1][0], (point_lowd[1] + vec_lowd[1])[0]],
-                [point_lowd[2][0], (point_lowd[2] + vec_lowd[2])[0]],
-                lw=4,
-                color=green,
-            )
+            pts = np.vstack(
+                [
+                    [point_lowd[0][0], (point_lowd[0] + vec_lowd[0])[0]],
+                    [point_lowd[1][0], (point_lowd[1] + vec_lowd[1])[0]],
+                    [point_lowd[2][0], (point_lowd[2] + vec_lowd[2])[0]],
+                ]
+            ).T
+            self.actors.append(Tube(pts, r=0.03, c=green,))
 
-    def visualize_rnn_traces(self, ax):
+    def visualize_rnn_traces(self):
         for trace in self.rnn.traces:
             lowd = self.pca.transform(trace.trace)
-            ax.plot(
-                lowd[:, 0], lowd[:, 1], lowd[:, 2], c=salmon, lw=4,
-            )
+            self.actors.append(Tube(lowd, c=salmon, r=0.02,))
 
-    def show(self, ax_lims=True, scale=1, x_range=0.05):
-        ax = self.visualize_manifold(ax_lims=ax_lims)
-        self.visualize_tangent_vectors(ax, scale=scale, x_range=x_range)
+    def show(self, scale=1, x_range=0.05):
+        self.visualize_manifold()
+        self.visualize_tangent_vectors(scale=scale, x_range=x_range)
 
         if self.rnn is not None:
-            self.visualize_rnn_traces(ax)
+            self.visualize_rnn_traces()
 
-        return ax
+        for actor in self.actors:
+            actor.lighting("plastic")
+
+        camera = dict(
+            pos=[-0.185, -11.551, 8.326],
+            focalPoint=[0.115, -0.647, 0.251],
+            viewup=[-0.039, 0.595, 0.802],
+            distance=14,
+            # clippingRange = [7.661, 22.088],
+        )
+
+        show(
+            *self.actors,
+            size="full",
+            title=self.manifold.name,
+            axes=1,
+            camera=camera,
+        )

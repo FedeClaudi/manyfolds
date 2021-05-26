@@ -89,3 +89,24 @@ def scale_second(point, fact=10):
 @normalize
 def sin_on_sphere(point):
     return (np.sin(2 * point[0]), 0)
+
+
+# ---------------------------------------------------------------------------- #
+#                                    custom                                    #
+# ---------------------------------------------------------------------------- #
+@sel_args
+@normalize
+def sphere_equator(point):
+    """
+        Pushes the dynamics towards the equator of the sphere
+    """
+    return (np.cos(point.coordinates[0]), 0)
+
+
+@sel_args
+@normalize
+def sphere_poles(point):
+    """
+        Pushes the dynamics towards the poles of the sphere
+    """
+    return (-np.cos(point.coordinates[0]), 0)

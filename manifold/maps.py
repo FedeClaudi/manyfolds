@@ -99,3 +99,20 @@ def smul_2pi(*args):
 @return_many
 def smul_2pi_inverse(*args):
     return scalar_multiplication(1 / (2 * pi), *args)
+
+
+# ---------------------------------- custom ---------------------------------- #
+@return_many
+def sphere_U_2(x):
+    x0 = x[0] / pi
+    x1 = (x[1] - pi) / pi
+
+    return tuple([x0, x1])
+
+
+@return_many
+def sphere_U_2_inverse(x):
+    x[:, 0] = x[:, 0] * pi
+    x[:, 1] = x[:, 1] * pi + pi
+
+    return x
