@@ -2,15 +2,12 @@ import numpy as np
 from rich.table import Table
 from rich import print
 from loguru import logger
-from vedo import Sphere, Line, show, Tube, Torus, recoSurface
 
-from myterial import grey_dark, grey, blue, green, pink
+from myterial import pink
 
 from manifold.topology import Point, Map
 from manifold.maps import identity
 from manifold.manifolds import vectors_fields
-from manifold.tangent_vector import get_tangent_vector
-from manifold.maths import unit_vector
 
 
 class BaseManifold:
@@ -118,84 +115,6 @@ class BaseManifold:
         self.embedded = np.vstack(
             [p.coordinates for p in self.embedded_points_vis]
         )
-
-    def visualize_embedded(self):
-
-        for p in self.points:
-            self.actors.append(Sphere(p.embedded, r=0.05, c=blue, res=12,))
-
-        if self.d == 1:
-            self.actors.append(Line(self.embedded, lw=4, c=grey,))
-        else:
-            if self.name == "S2":
-                # plot a sphere
-                self.actors.append(Sphere(r=0.75, c=grey).wireframe())
-
-            elif self.name == "Cy":
-                # plot a cylinder
-                raise NotImplementedError
-
-            elif self.name == "T2":
-                # plot a torus
-                self.actors.append(
-                    Torus(r=0.5, thickness=0.25, c="grey", res=20,)
-                    .wireframe()
-                    .lw(1)
-                )
-
-            else:
-                # plot points
-                self.actors.append(
-                    recoSurface(self.embedded, dims=(20, 20, 20), radius=0.5)
-                    .c(grey)
-                    .wireframe()
-                    .lw(1)
-                    .clean()
-                )
-
-    def visualize_base_functions_at_point(self, x_range=0.2, scale=0.2):
-        """
-            For a given point in the manifold it projects the base functions
-            in the image of the points chart to the embedding. This is done by taking each 
-            point in the domain of the function, passing it through the inverse chart map
-            and then the embedding
-        """
-        if not isinstance(x_range, list):
-            x_range = [x_range] * self.d
-
-        for point in self.points:
-            # plot the base function
-            for fn in point.base_functions:
-                fn.embedd()
-                self.actors.append(Tube(fn.embedded, r=0.02, c=grey_dark,))
-
-            vector = (
-                unit_vector(get_tangent_vector(point, self.vectors_field))
-                * scale
-            )
-            pts = np.vstack(
-                [
-                    [fn.point.embedded[0], fn.point.embedded[0] + vector[0]],
-                    [fn.point.embedded[1], fn.point.embedded[1] + vector[1]],
-                    [fn.point.embedded[2], fn.point.embedded[2] + vector[2]],
-                ]
-            ).T
-
-            self.actors.append(Tube(pts, r=0.03, c=green,))
-
-    def show(self):
-        for actor in self.actors:
-            actor.lighting("plastic")
-
-        camera = dict(
-            pos=[-0.025, -5.734, 4.018],
-            focalPoint=[0.115, -0.647, 0.251],
-            viewup=[-0.039, 0.595, 0.802],
-            distance=6.331,
-            clippingRange=[0.032, 32.461],
-        )
-
-        show(*self.actors, size="full", title=self.name, axes=1, camera=camera)
 
     # ------------------------ to implement in subclasses ------------------------ #
     def project_with_charts(self, points=None):

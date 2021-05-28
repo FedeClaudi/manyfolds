@@ -1,14 +1,14 @@
 from loguru import logger
 
 from manifold import embeddings, Line, Circle, Torus, Sphere, Plane, Cylinder
-from manifold.highN import Visualizer
 from manifold.rnn import RNN
 
 from manifold import vectors_fields
+from manifold import Visualizer
 
 MANIFOLD = "sphere"
 N = 12
-K = 12
+K = 24
 
 # get manifold
 if MANIFOLD == "line":
@@ -26,19 +26,21 @@ elif MANIFOLD == "circle":
     M = Circle(embeddings.prepare_circle_embedding(n=N), n_sample_points=10)
     pca_sample_points = 100
 
-    M.vectors_field = vectors_fields.torus_second
 
 elif MANIFOLD == "torus":
     logger.debug("Torus manifold")
     M = Torus(embeddings.prepare_torus_to_rn(n=N), n_sample_points=[4, 2])
     pca_sample_points = 60
 
+    M.vectors_field = vectors_fields.second_only
+
+
 elif MANIFOLD == "sphere":
     logger.debug("Sphere manifold")
     M = Sphere(embeddings.prepare_sphere_to_rn(n=N), n_sample_points=[4, 4])
     pca_sample_points = 60
 
-    # M.vectors_field = vectors_fields.sphere_base
+    M.vectors_field = vectors_fields.second_only
 
 elif MANIFOLD == "cylinder":
     logger.debug("Cylinder manifold")
@@ -58,12 +60,12 @@ else:
 M.print_embedding_bounds()
 
 # set vector field
-# M.vectors_field = vectors_fields.second_only
+M.vectors_field = vectors_fields.sphere_equator
 
 # fit and run RNN
 rnn = RNN(M, n_units=N)
-rnn.build_W(k=K, scale=0.1)
-rnn.run_points(n_seconds=3)
+rnn.build_W(k=K, scale=0.001)
+rnn.run_points(n_seconds=5)
 
 
 viz = Visualizer(M, rnn=rnn, pca_sample_points=pca_sample_points)

@@ -12,3 +12,4 @@ from manifold.manifolds import (
     vectors_fields,
     Cylinder,
 )
+from manifold.visualize import Visualizer

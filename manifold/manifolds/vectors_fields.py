@@ -41,6 +41,21 @@ def negative(point):
     return tuple([-1 for n in range(point.d)])
 
 
+@sel_args
+def zeros(point):
+    return tuple([1e-6 for n in range(point.d)])
+
+
+@sel_args
+def small(point):
+    return tuple([1e-1 for n in range(point.d)])
+
+
+@sel_args
+def random(point):
+    return tuple(np.random.rand(point.d))
+
+
 # ---------------------------------------------------------------------------- #
 #                                      1D                                      #
 # ---------------------------------------------------------------------------- #
@@ -100,12 +115,11 @@ def sin_on_sphere(point):
 # ---------------------------------------------------------------------------- #
 # ---------------------------------- sphere ---------------------------------- #
 @sel_args
-@normalize
 def sphere_equator(point):
     """
         Pushes the dynamics towards the equator of the sphere
     """
-    return (np.cos(point.coordinates[0]) ** 2, 0)
+    return (np.cos(point.coordinates[0]), 0)
 
 
 @sel_args

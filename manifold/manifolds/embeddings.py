@@ -64,7 +64,7 @@ def line_to_r3(p):
 
 @parse
 def helix_to_r3(p):
-    return (cos(4 * pi * p) / 2, sin(4 * pi * p) / 2, p)
+    return (cos(4 * pi * p) / 2, sin(4 * pi * p) / 2, p / 2 + 0.25)
 
 
 # ---------------------------------- circle ---------------------------------- #
@@ -83,7 +83,7 @@ def circle_to_r3_angled(p):
 
 @parse
 def circle_to_r3(p):
-    return (sin(p), cos(p) / 2, sin(4 * p))
+    return (sin(p), cos(p) / 2, sin(4 * p) / 2)
 
 
 # ---------------------------------- sphere ---------------------------------- #

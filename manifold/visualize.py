@@ -1,44 +1,244 @@
-import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
 import numpy as np
-from vedo.colors import hex2rgb, rgb2hex
+from vedo import (
+    Tube,
+    recoSurface,
+    Line,
+    Sphere,
+    Plotter,
+    Cylinder,
+    Torus,
+    Cone,
+)
+
+from myterial import (
+    grey,
+    salmon,
+    green,
+    black,
+    blue_light,
+    indigo,
+    deep_purple,
+)
+
+from manifold.tangent_vector import get_tangent_vector
+from manifold._visualize import blue_dark, make_palette
+from manifold.maths import unit_vector
 
 
-blue = "#c3c3db"
+class Visualizer:
+    """
+        Class to facilitate the visualization of 
+        data from embeddings in N >> 3 using 
+        dimensionality reduction techniques.
+    """
 
+    actors = []
 
-def make_palette(c1, c2, N):
-    c1 = np.array(hex2rgb(c1))
-    c2 = np.array(hex2rgb(c2))
-    cols = []
-    for f in np.linspace(0, 1, N, endpoint=True):
-        c = c1 * (1 - f) + c2 * f
-        cols.append(rgb2hex(c))
-    return cols
+    def __init__(self, manifold, rnn=None, pca_sample_points=64):
+        self.manifold = manifold
+        self.rnn = rnn
 
+        if self.manifold.n > 3:
+            self.pca_sample_points = pca_sample_points
+            self.fit_pca()
 
-def make_3D_ax(nolim=True):
-    plt.figure(figsize=(9, 9))
-    ax = plt.axes(projection="3d")
-    ax.set(
-        xlabel="$x^1$", ylabel="$x^2$", zlabel="$x^3$",
-    )
+        self.make_plotter()
 
-    if not nolim:
-        ax.set(
-            xlim=[-1, 1],
-            ylim=[-1, 1],
-            zlim=[-1, 1],
-            xticks=[-1, 0, 1],
-            yticks=[-1, 0, 1],
-            zticks=[-1, 0, 1],
+    def make_plotter(self):
+        if self.manifold.n > 3:
+            camera = dict(
+                pos=[-0.185, -11.551, 8.326],
+                focalPoint=[0.115, -0.647, 0.251],
+                viewup=[-0.039, 0.595, 0.802],
+                distance=14,
+                clippingRange=[2.661, 22.088],
+            )
+        else:
+            camera = dict(
+                pos=(-5.16, 3.38, 1.29),
+                focalPoint=(4.83e-3, -0.299, -0.275),
+                viewup=(0.183, -0.155, 0.971),
+                distance=6.53,
+                clippingRange=(3.11, 10.4),
+            )
+
+        self.plotter = Plotter(size="full", axes=1)
+
+        self.plotter.camera.SetPosition(camera["pos"])
+        self.plotter.camera.SetFocalPoint(camera["focalPoint"])
+        self.plotter.camera.SetViewUp(camera["viewup"])
+        self.plotter.camera.SetDistance(camera["distance"])
+        self.plotter.camera.SetClippingRange(camera["clippingRange"])
+
+    def fit_pca(self):
+        """
+            Fits a PCA model to N sampled from the manifold's embedding
+        """
+        embedded_points_pca = self.manifold.sample(
+            n=self.pca_sample_points, full=True, fill=True
+        )
+        embedded = np.vstack([p.embedded for p in embedded_points_pca])
+
+        self.pca = PCA(n_components=3).fit(embedded)
+        self.embedded_lowd = self.pca.transform(embedded)
+
+    def _add_silhouette(self, mesh, lw=2):
+        self.actors.append(mesh.silhouette().lw(lw).color(black))
+
+    def _render_cylinder(self, pts, color, r=0.02):
+        mesh = Cylinder(pts, r=r, c=color,)
+        self.actors.append(mesh)
+        self._add_silhouette(mesh)
+
+    def _scatter_point(self, point):
+        if self.manifold.n > 3:
+            coordinates = self.pca.transform(
+                np.array(point.embedded).reshape(1, -1)
+            )[0]
+        else:
+            coordinates = np.array(point.embedded)
+
+        mesh = Sphere(
+            coordinates, r=0.05 if self.manifold.d > 1 else 0.05, c=blue_dark,
+        )
+        self.actors.append(mesh)
+        self._add_silhouette(mesh)
+
+    def _reconstruct_surface(self, coordinates):
+        # plot points
+        self.actors.append(
+            recoSurface(coordinates, dims=(50, 50, 50), radius=0.15)
+            .c(grey)
+            .wireframe()
+            .lw(1)
+            .clean()
         )
 
-    ax.grid(False)
-    ax.xaxis.pane.set_edgecolor("black")
-    ax.yaxis.pane.set_edgecolor("black")
-    ax.zaxis.pane.set_edgecolor("black")
-    ax.xaxis.pane.fill = False
-    ax.yaxis.pane.fill = False
-    ax.zaxis.pane.fill = False
+    def _draw_manifold(self):
+        if self.manifold.n == 3:
+            if self.manifold.d == 1:
+                self.actors.append(
+                    Line(self.manifold.embedded, lw=12, c=grey,)
+                )
+            else:
+                if self.manifold.name == "S2":
+                    # plot a sphere
+                    self.actors.append(Sphere(r=0.75, c=grey).wireframe())
 
-    return ax
+                elif self.manifold.name == "Cy":
+                    # plot a cylinder
+                    self.actors.append(
+                        Cone(pos=(0, 0, 1), r=0.8, axis=(0, 0, -1), c=grey)
+                        .wireframe()
+                        .lw(2)
+                    )
+
+                elif self.manifold.name == "T2":
+                    # plot a torus
+                    self.actors.append(
+                        Torus(r=0.5, thickness=0.25, c="grey", res=20,)
+                        .wireframe()
+                        .lw(1)
+                    )
+
+                else:
+                    # plot points
+                    self._reconstruct_surface(self.manifold.embedded)
+        else:
+            if self.manifold.d > 1:
+                self._reconstruct_surface(self.embedded_lowd)
+            else:
+                self.actors.append(Line(self.embedded_lowd, c=grey, lw=12))
+
+    def visualize_manifold(self):
+        for point in self.manifold.points:
+            self._scatter_point(point)
+        self._draw_manifold()
+
+    def visualize_tangent_vectors(self, scale=1, x_range=0.05):
+        if not isinstance(x_range, list):
+            x_range = [x_range] * self.manifold.d
+
+        for point in self.manifold.points:
+            # draw base functions
+            for fn in point.base_functions:
+                fn.embedd(x_range=x_range[fn.dim_idx])
+                # if self.manifold.n == 3:
+                #     coordinates = fn.embedded
+                # else:
+                #     coordinates = self.pca.transform(fn.embedded)
+
+                # mesh = Tube(coordinates, r=0.02, c=grey_dark,)
+                # self.actors.append(mesh)
+                # self._add_silhouette(mesh, lw=100)
+
+            # get tangent vector as sum of basis
+            vector = get_tangent_vector(
+                point, self.manifold.vectors_field, debug=True
+            ) * scale + np.array(point.embedded)
+
+            # apply PCA and render
+            if self.manifold.n > 3:
+                point_lowd = self.pca.transform(
+                    np.array(point.embedded).reshape(1, -1)
+                ).ravel()
+                vec_lowd = self.pca.transform(vector.reshape(1, -1)).ravel()
+
+                self._render_cylinder([point_lowd, vec_lowd], green, r=0.02)
+            else:
+                self._render_cylinder([point.embedded, vector], green, r=0.02)
+
+    def visualize_rnn_inputs(self, scale=1, rnn_inputs=None):
+        """
+            Plots the basis vectors of the RNN's inputs vectors space
+        """
+        if self.rnn.B is None:
+            return
+        if self.manifold.n > 3:
+            raise NotImplementedError("Reduce dim on point and vec")
+
+        # visualize inputs basis vector
+        colors = make_palette(blue_light, indigo, self.rnn.n_inputs)
+        for base in self.rnn.inputs_basis:
+            for point in self.manifold.points:
+                self._render_cylinder(
+                    [point.embedded, point.embedded + base.projected * scale],
+                    colors[base.idx],
+                    r=0.02,
+                )
+
+        if rnn_inputs is not None:
+            vec = unit_vector(self.rnn.B.T @ rnn_inputs)
+
+            for point in self.manifold.points:
+                self._render_cylinder(
+                    [point.embedded, point.embedded + vec], deep_purple, r=0.02
+                )
+
+    def visualize_rnn_traces(self):
+        for trace in self.rnn.traces:
+            if self.manifold.n > 3:
+                coordinates = self.pca.transform(trace.trace)
+            else:
+                coordinates = trace.trace
+            self.actors.append(
+                Tube(
+                    coordinates,
+                    c=salmon,
+                    r=0.02 if self.manifold.d == 1 else 0.015,
+                )
+            )
+
+    def show(self, scale=1, x_range=0.05, rnn_inputs=None):
+        self.visualize_manifold()
+        self.visualize_tangent_vectors(scale=scale, x_range=x_range)
+
+        if self.rnn is not None:
+            self.visualize_rnn_traces()
+            self.visualize_rnn_inputs(scale=scale, rnn_inputs=rnn_inputs)
+
+        for actor in self.actors:
+            actor.lighting("off")
+
+        self.plotter.show(*self.actors)

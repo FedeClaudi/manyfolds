@@ -28,16 +28,21 @@ def get_basis_tangent_vector(point, base_function, embedding):
     )
 
 
-def get_tangent_vector(point, vectors_field, debug=False):
+def get_tangent_vector(point, vectors_field=None, debug=False):
     """
         Gets a tangent vector at a point by summing
         the basis vectors using coefficients from a vectors field
     """
-    weights = vectors_field(point)
+
     basis = []
     for fn in point.base_functions:
         basis.append(unit_vector(fn.tangent_vector))
     basis = np.vstack(basis)
+
+    if vectors_field is not None:
+        weights = vectors_field(point)
+    else:
+        weights = np.ones(len(basis))
 
     if debug:
         logger.debug(
@@ -47,4 +52,9 @@ def get_tangent_vector(point, vectors_field, debug=False):
     if basis.shape[0] == 1:
         return basis[0] * weights[0]
     else:
-        return np.dot(basis.T, weights)
+        try:
+            return np.dot(basis.T, weights)
+        except Exception:
+            raise ValueError(
+                "Failed to get weighted sum of basis vector - likely a vector field for a 1D manifold was used on a 2D manifold"
+            )

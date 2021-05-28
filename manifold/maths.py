@@ -1,5 +1,6 @@
 import numpy as np
 import itertools
+from loguru import logger
 
 
 def ortho_normal_matrix(n, m):
@@ -26,6 +27,7 @@ def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
     norm = np.linalg.norm(vector)
     if not norm:
+        logger.warning("Attempted to normalize a vector with no magnitude")
         return vector
     else:
         return vector / np.linalg.norm(vector)
