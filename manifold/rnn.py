@@ -60,10 +60,14 @@ class RNN:
                 vector_fields: list. List of functions mapping points on the manifolds
                     to elements of the tangent vector spce at that point.
         """
-        if vector_fields is not None and len(vector_fields) != self.n_inputs:
-            raise ValueError(
-                "When passing vector fields to build_B you need as manu fields as there are inputs to the RNN"
-            )
+        if vector_fields is not None:
+            if isinstance(vector_fields, list) and len(vector_fields) != self.n_inputs:
+                raise ValueError(
+                    "When passing vector fields to build_B you need as manu fields as there are inputs to the RNN"
+                )
+            elif not isinstance(vector_fields, list):
+                vector_fields = [vector_fields] * self.n_inputs
+
         points = self.manifold.sample(n=k - 1, fill=True, full=True)
 
         # basis of inputs vector space Rm

@@ -23,15 +23,9 @@ from myterial import (
 
 from manifold.tangent_vector import get_tangent_vector
 from manifold._visualize import blue_dark, make_palette
-
+from manifold.maths import unit_vector
 
 class Visualizer:
-    """
-        Class to facilitate the visualization of 
-        data from embeddings in N >> 3 using 
-        dimensionality reduction techniques.
-    """
-
     actors = []
 
     def __init__(self, manifold, rnn=None, pca_sample_points=64):
@@ -198,7 +192,8 @@ class Visualizer:
             raise NotImplementedError("Reduce dim on point and vec")
 
         # visualize inputs basis vector
-        colors = make_palette(blue_light, indigo, self.rnn.n_inputs)
+        # colors = make_palette(blue_light, indigo, self.rnn.n_inputs)
+        colors = ['r', 'r', 'r', 'r', 'g', 'g', 'g', 'g']
         for base in self.rnn.inputs_basis:
             for point in self.manifold.points:
                 self._render_cylinder(
@@ -211,17 +206,22 @@ class Visualizer:
                 )
 
         if rnn_inputs is not None:
-            try:
-                vec = self.rnn.B.T @ rnn_inputs
-            except ValueError:
-                raise ValueError(
-                    f"Failed to compute RNN input vec Bu - B shape: {self.rnn.B.shape} - u shape {rnn_inputs.shape}"
-                )
+            if len(rnn_inputs.shape) == 1:
+                rnn_inputs = rnn_inputs.reshae(1, -1)
+            
+            for idx in np.arange(rnn_inputs.shape[0]):
+                try:
+                    vec = unit_vector(self.rnn.B.T @ rnn_inputs[idx])
+                except ValueError:
+                    raise ValueError(
+                        f"Failed to compute RNN input vec Bu - B shape: {self.rnn.B.shape} - u shape {rnn_inputs.shape}"
+                    )
 
-            for point in self.manifold.points:
-                self._render_cylinder(
-                    [point.embedded, point.embedded + vec], deep_purple, r=0.02
-                )
+                for point in self.manifold.points:
+                    self._render_cylinder(
+                        [point.embedded, point.embedded + vec], deep_purple, r=0.02
+                    )
+
 
     def visualize_rnn_traces(self):
         for trace in self.rnn.traces:
