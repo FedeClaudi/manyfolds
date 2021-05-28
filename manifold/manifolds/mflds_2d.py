@@ -34,7 +34,7 @@ class Manifold2D(BaseManifold):
         if not isinstance(n, list):
             n = [n] * self.d
 
-        logger.debug(f"Sampling manifold points with n={n}")
+        logger.debug(f"Sampling manifold points with n={[x+1 for x in n]}")
 
         # sample from each interval the maifold is defined over.
         points = []

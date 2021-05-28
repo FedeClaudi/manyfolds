@@ -11,7 +11,7 @@ elif MANIFOLD == "helix":
     M = Line(embeddings.helix_to_r3, n_sample_points=3)
 
 elif MANIFOLD == "circle":
-    M = Circle(embeddings.circle_to_r3_flat, n_sample_points=8)
+    M = Circle(embeddings.circle_to_r3, n_sample_points=8)
 M.print_embedding_bounds()
 
 # define vector field

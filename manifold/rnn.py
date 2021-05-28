@@ -5,7 +5,6 @@ from rich.progress import track
 
 from manifold.maths import tanh, unit_vector
 from manifold.tangent_vector import get_tangent_vector
-from manifold.manifolds.vectors_fields import random as random_vfield
 
 
 @dataclass
@@ -55,6 +54,11 @@ class RNN:
             Builds the input connectivity matrix B for the RNN by
             enforinc that any import vector u results in a vector
             tangent to the manifold when multiplied by B.
+
+            Arguments:
+                k: int. Number of sample points to use.
+                vector_fields: list. List of functions mapping points on the manifolds
+                    to elements of the tangent vector spce at that point.
         """
         if vector_fields is not None and len(vector_fields) != self.n_inputs:
             raise ValueError(
@@ -80,17 +84,6 @@ class RNN:
 
                 # get the basis vector
                 inputs.append(basis[:, idx])
-
-            # also use random sums of the basis vectors
-            for i in range(10):
-                # get a random inputs vector
-                weights = np.random.rand(self.n_inputs)
-                inputs.append(weights.dot(basis))
-
-                # get a random tangent vector
-                tangents.append(
-                    get_tangent_vector(point, vectors_field=random_vfield)
-                )
 
         # solve for B
         self.B = self._solve_eqs_sys(inputs, tangents)

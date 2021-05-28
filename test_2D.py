@@ -5,7 +5,7 @@ from manifold import vectors_fields
 from manifold import Visualizer
 
 K = 32
-MANIFOLD = "plane"
+MANIFOLD = "cylinder"
 
 if MANIFOLD == "plane":
     M = Plane(embeddings.plane_to_r, n_sample_points=[3, 2])
@@ -26,13 +26,13 @@ elif MANIFOLD == "cylinder":
     x_range = [0.1, 0.05]
 
 # set vector field
-M.vectors_field = vectors_fields.first_only
+# M.vectors_field = vectors_fields.first_only
 #
 
 # create RNN
 rnn = RNN(M, n_units=3)
 rnn.build_W(k=K, scale=0.001)
-rnn.run_points(n_seconds=1)
+rnn.run_points(n_seconds=10)
 
 
 # visualize in embedding

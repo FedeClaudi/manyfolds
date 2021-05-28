@@ -1,6 +1,5 @@
 from numpy import sin, cos, pi
 import numpy as np
-import numpy.random as npr
 from scipy.stats import ortho_group
 from functools import partial
 
@@ -78,12 +77,12 @@ def circle_to_r3_flat(p):
 
 @parse
 def circle_to_r3_angled(p):
-    return (sin(p), cos(p) / 2, sin(p))
+    return (sin(p), cos(p), sin(p))
 
 
 @parse
 def circle_to_r3(p):
-    return (sin(p), cos(p) / 2, sin(4 * p) / 2)
+    return (2 * sin(p), cos(p), cos(p) ** 2 + 0.5)
 
 
 # ---------------------------------- sphere ---------------------------------- #
@@ -124,7 +123,7 @@ def cylinder_to_r3(p0, p1):
 @parse2D
 def cylinder_to_r3_as_cone(p0, p1):
     k = p1 / 2 + 0.4
-    return (k * sin(p0) / 2, k * cos(p0) / 2, p1 + 0.1)
+    return (k * sin(p0) / 2, k * cos(p0) / 2, p1 + 0.5)
 
 
 # ---------------------------------------------------------------------------- #
@@ -162,13 +161,20 @@ def line_to_rn_flat(p, n=64):
 
 
 # ---------------------------------- circle ---------------------------------- #
-@parse
-def circle_to_rn(p, n=64):
-    coords = []
-    func = npr.choice((sin, cos), size=n + 1)
-    for dim in range(n):
-        coords.append(func[n](p))
-    return tuple(coords)
+def circle_to_rn(mtx, p):
+    """
+        Embedd a plane by first embedding it in
+        R3 and then using a linear transformatin
+        to Rn
+    """
+    circle_3d = circle_to_r3(p)
+    embedded = mtx @ np.array(circle_3d)
+    return tuple(embedded)
+
+
+def prepare_circle_to_rn(n=64):
+    mtx = ortho_normal_matrix(n, 3)
+    return partial(circle_to_rn, mtx)
 
 
 @parse
@@ -183,7 +189,7 @@ def circle_to_rn_flat(v, m, p):
     return tuple(coords)
 
 
-def prepare_circle_embedding(n=64):
+def prepare_circle_falt_to_rn(n=64):
     x = ortho_group.rvs(n)
     v = x[:, 0]
     m = x[:, 1]

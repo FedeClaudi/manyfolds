@@ -60,7 +60,7 @@ class Manifold1D(BaseManifold):
         n = n or self.n_sample_points
         if isinstance(n, list):
             n = n[0]
-        logger.debug(f"Sampling manifold points with n={n}")
+        logger.debug(f"Sampling manifold points with n={n+1}")
 
         # sample points
         points = [Point((k,), self.embedding) for k in self.M.sample(n)]

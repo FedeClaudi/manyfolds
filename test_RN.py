@@ -6,9 +6,9 @@ from manifold.rnn import RNN
 from manifold import vectors_fields
 from manifold import Visualizer
 
-MANIFOLD = "sphere"
+MANIFOLD = "circle"
 N = 12
-K = 24
+K = 6
 
 # get manifold
 if MANIFOLD == "line":
@@ -23,7 +23,7 @@ elif MANIFOLD == "helix":
 
 elif MANIFOLD == "circle":
     logger.debug("Circle manifold")
-    M = Circle(embeddings.prepare_circle_embedding(n=N), n_sample_points=10)
+    M = Circle(embeddings.prepare_circle_to_rn(n=N), n_sample_points=10)
     pca_sample_points = 100
 
 
@@ -60,7 +60,7 @@ else:
 M.print_embedding_bounds()
 
 # set vector field
-M.vectors_field = vectors_fields.sphere_equator
+# M.vectors_field = vectors_fields.sphere_equator
 
 # fit and run RNN
 rnn = RNN(M, n_units=N)

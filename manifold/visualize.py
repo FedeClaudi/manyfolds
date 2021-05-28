@@ -23,7 +23,6 @@ from myterial import (
 
 from manifold.tangent_vector import get_tangent_vector
 from manifold._visualize import blue_dark, make_palette
-from manifold.maths import unit_vector
 
 
 class Visualizer:
@@ -129,7 +128,7 @@ class Visualizer:
                 elif self.manifold.name == "Cy":
                     # plot a cylinder
                     self.actors.append(
-                        Cone(pos=(0, 0, 1), r=0.8, axis=(0, 0, -1), c=grey)
+                        Cone(pos=(0, 0, 1.5), r=1, axis=(0, 0, -1), c=grey)
                         .wireframe()
                         .lw(2)
                     )
@@ -203,13 +202,21 @@ class Visualizer:
         for base in self.rnn.inputs_basis:
             for point in self.manifold.points:
                 self._render_cylinder(
-                    [point.embedded, point.embedded + base.projected * scale],
+                    [
+                        point.embedded,
+                        point.embedded + base.projected * scale * 0.5,
+                    ],
                     colors[base.idx],
                     r=0.02,
                 )
 
         if rnn_inputs is not None:
-            vec = unit_vector(self.rnn.B.T @ rnn_inputs)
+            try:
+                vec = self.rnn.B.T @ rnn_inputs
+            except ValueError:
+                raise ValueError(
+                    f"Failed to compute RNN input vec Bu - B shape: {self.rnn.B.shape} - u shape {rnn_inputs.shape}"
+                )
 
             for point in self.manifold.points:
                 self._render_cylinder(
