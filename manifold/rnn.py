@@ -6,7 +6,10 @@ from autograd import elementwise_grad as egrad
 
 
 from manifold.maths import unit_vector
-from manifold.tangent_vector import get_tangent_vector
+from manifold.tangent_vector import (
+    get_tangent_vector,
+    get_basis_tangent_vector,
+)
 
 
 @dataclass
@@ -30,7 +33,7 @@ class InputsBase:
 
 
 class RNN:
-    dt = 0.003
+    dt = 0.05
 
     traces = []  # stores results of runnning RNN on initial conditions
     B = None  # place holder for connections matrix
@@ -48,6 +51,9 @@ class RNN:
 
         self.sigma = np.tanh
         self.sigma_gradient = egrad(self.sigma)
+
+        self.d = self.manifold.d
+        self.n = self.manifold.n
 
     @staticmethod
     def _solve_eqs_sys(Xs, Ys):
@@ -70,6 +76,7 @@ class RNN:
                 vector_fields: list. List of functions mapping points on the manifolds
                     to elements of the tangent vector spce at that point.
         """
+        raise NotImplementedError
         if vector_fields is not None:
             if (
                 isinstance(vector_fields, list)
@@ -134,17 +141,27 @@ class RNN:
             raise ValueError(f"Got {len(points)} points with k={k}")
 
         # identity matrix for right hand side
-        I_d = np.eye(self.manifold.d) * 1 / self.dt
-        sing_val = 0.1
+        U_t = np.eye(self.n)
+        Sigma = np.eye(self.n) * (-1 / self.dt)
 
         # get sys of equations for each point
         lhs = []  # U^T . \Phi
         rhs = []  # tau(Eps + 1/t I_d).dot U^T
         for point in points:
             # get the network's h_dot as a sum of base function tangent vectors
-            U_transpose = get_tangent_vector(
-                point, self.manifold.vectors_field
+            for fn in point.base_functions:
+                fn.embedd(x_range=0.2)
+
+            U_transpose_target = np.vstack(
+                [
+                    unit_vector(get_basis_tangent_vector(point, fn))
+                    for fn in point.base_functions
+                ]
             )
+            U_transpose = U_t.copy()
+            U_transpose[: self.d, :] = U_transpose_target
+
+            print(U_transpose)
 
             # Get derivative of non-linear function
             Phi = np.diag(
@@ -152,10 +169,17 @@ class RNN:
             )
 
             # store LHS
-            lhs.append(U_transpose.dot(Phi))
+            lhs.append(U_transpose @ Phi)
 
             # store RHS
-            rhs.append(self.dt * (I_d + sing_val) * U_transpose)
+            sigma_target = (
+                np.diag(self.manifold.vectors_field(point)) * 1 / self.dt
+            )
+            sigma = Sigma.copy()
+            sigma[: self.d, : self.d] = sigma_target
+
+            print(sigma)
+            rhs.append(self.dt * sigma @ U_transpose)
 
         # get W
         self.W = self._solve_eqs_sys(lhs, rhs)  # * self.dt * scale
@@ -163,14 +187,14 @@ class RNN:
 
     def step(self, h, inputs=None):
         h = np.array(h)
-        if inputs is None:
-            hdot = self.W.T.dot(self.sigma(h))
-        else:
+        hdot = self.W.T.dot(self.sigma(h))
+
+        if inputs is not None:
             if self.B is None:
                 raise ValueError(
                     "In order to use inputs you need to build B matrix first"
                 )
-            hdot = self.W.dot(self.sigma(h)) + self.B.T.dot(inputs)
+            hdot += self.B.T.dot(inputs)
         return h + self.dt * hdot
 
     def run_initial_condition(self, h, n_seconds=10.0, inputs=None, cut=True):

@@ -7,8 +7,8 @@ from manifold import vectors_fields
 from manifold import Visualizer
 
 MANIFOLD = "circle"
-N = 200
-K = 64
+N = 64
+K = 10
 
 # get manifold
 if MANIFOLD == "line":
@@ -25,8 +25,9 @@ elif MANIFOLD == "circle":
     logger.debug("Circle manifold")
     M = Circle(embeddings.prepare_circle_angled_to_rn(n=N), n_sample_points=10)
     pca_sample_points = 100
-    M.vectors_field = vectors_fields.double_sin
+    # M.vectors_field = vectors_fields.double_sin
 
+    M.vectors_field = vectors_fields.identity
 
 elif MANIFOLD == "torus":
     logger.debug("Torus manifold")
@@ -62,7 +63,7 @@ else:
 # fit and run RNN
 rnn = RNN(M, n_units=N)
 rnn.build_W(k=K, scale=100)
-rnn.run_points(n_seconds=5)
+rnn.run_points(n_seconds=0.5)
 
 
 viz = Visualizer(M, rnn=rnn, pca_sample_points=pca_sample_points)
