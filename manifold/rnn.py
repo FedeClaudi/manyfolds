@@ -16,6 +16,9 @@ class Trace:
     initial_condition: np.ndarray
     trace: np.ndarray
 
+    def __len__(self):
+        return len(self.trace)
+
 
 @dataclass
 class InputsBase:
@@ -46,13 +49,13 @@ class RNN:
     def _solve_eqs_sys(Xs, Ys):
         X = np.vstack(Xs).T
         Y = np.linalg.pinv(np.vstack(Ys).T)
-        noise = np.random.normal(0, 1e-6, size=Y.shape)
+        noise = np.random.normal(0, 1e-10, size=Y.shape)
         return X @ (Y + noise)
 
     def build_B(self, k=10, vector_fields=None):
         """
             Builds the input connectivity matrix B for the RNN by
-            enforinc that any import vector u results in a vector
+            enforcing that any imput vector u results in a vector
             tangent to the manifold when multiplied by B.
 
             Arguments:
@@ -66,7 +69,8 @@ class RNN:
             )
         points = self.manifold.sample(n=k - 1, fill=True, full=True)
 
-        # basis of inputs vector space Rm
+        # standard basis of inputs vector space Rm
+
         basis = np.eye(self.n_inputs)
         inputs = []  # stroes inputs vectors
         tangents = []  # stores tangent vectors Bu
@@ -77,6 +81,7 @@ class RNN:
                     vfield = vector_fields[idx]
                 else:
                     vfield = None
+
                 # get a vector tangent to the manifold
                 tangents.append(
                     get_tangent_vector(point, vectors_field=vfield)
@@ -127,7 +132,7 @@ class RNN:
             s.append(self.sigma(point.embedded))
 
         # get W
-        self.W = self._solve_eqs_sys(v, s) / self.dt * scale
+        self.W = self._solve_eqs_sys(v, s) * self.dt * scale
         logger.debug(f"RNN connection matrix shape: {self.W.shape}")
 
     def step(self, h, inputs=None):
@@ -142,7 +147,7 @@ class RNN:
             hdot = self.W.dot(self.sigma(h)) + self.B.T.dot(inputs)
         return h + self.dt * hdot
 
-    def run_initial_condition(self, h, n_seconds=10.0, inputs=None):
+    def run_initial_condition(self, h, n_seconds=10.0, inputs=None, cut=True):
         trace = [h]
         n_steps = int(n_seconds / self.dt)
 
@@ -151,13 +156,13 @@ class RNN:
             h = self.step(h, inputs=inputs)
             trace[n, :] = h
 
-            if np.linalg.norm(h) >= 3 and n > 1:
+            if np.linalg.norm(h) >= 3 and n > 1 and cut:
                 trace = trace[:n, :]
                 break  # too far from origin
 
         self.traces.append(Trace(trace[0, :], trace))
 
-    def run_points(self, points=None, n_seconds=10, inputs=None):
+    def run_points(self, points=None, n_seconds=10, inputs=None, cut=True):
         """
             Runs the RNN on each sampled point for the manifold
         """
@@ -167,5 +172,8 @@ class RNN:
             points, description="Running initial conditions..."
         ):
             self.run_initial_condition(
-                np.array(point.embedded), n_seconds=n_seconds, inputs=None
+                np.array(point.embedded),
+                n_seconds=n_seconds,
+                inputs=None,
+                cut=cut,
             )

@@ -67,6 +67,11 @@ def sin(point):
 
 
 @sel_args
+def double_sin(point):
+    return (np.sin(point[0] * 4),)
+
+
+@sel_args
 def scaled_sin(point):
     return (np.sin(point[0] * 6),)
 
@@ -140,26 +145,34 @@ def sphere_base(point):
     return (-np.cos(point.coordinates[0]), 1)
 
 
+@sel_args
+@normalize
+def sphere_base2(point):
+    """
+        Pushes the dynamics towards the poles of the sphere
+    """
+    return (1, -np.cos(point.coordinates[1]))
+
+
 # ----------------------------------- torus ---------------------------------- #
 @normalize
 def torus_base(point):
-    """
-        Pushes the dynamics towards the poles of the sphere
-    """
     return (point.coordinates[0], np.sin(2 * point.coordinates[1]))
 
 
-@sel_args
 def torus_first(point):
-    """
-        Pushes the dynamics towards the poles of the sphere
-    """
-    return (point.coordinates[0], 0)
+    return (np.cos(point.coordinates[1]), 0)
 
 
-@sel_args
 def torus_second(point):
-    """
-        Pushes the dynamics towards the poles of the sphere
-    """
-    return (0, np.sin(2 * point.coordinates[1]))
+    return (0, np.cos(point.coordinates[0] * 2))
+
+
+# @sel_args
+# def torus_first(point):
+#     return (np.sin(2 * point.coordinates[0]), 0)
+
+
+# @sel_args
+# def torus_second(point):
+#     return (0, np.sin(2 * point.coordinates[1]))

@@ -119,7 +119,7 @@ class Manifold2D(BaseManifold):
 
 
 class Plane(Manifold2D):
-    name = "R2"
+    name = "R^2"
     manifold = Manifold(
         M=[Interval("M_1", 0, 1), Interval("M_2", 0, 1)],
         charts=[
@@ -153,7 +153,7 @@ class Plane(Manifold2D):
 
 
 class Sphere(Manifold2D):
-    name = "S2"
+    name = "S^2"
     manifold = Manifold(
         M=[Interval("M_1", 0, pi), Interval("M_2", 0, 2 * pi)],
         charts=[
@@ -222,7 +222,7 @@ class Cylinder(Manifold2D):
 
 
 class Torus(Manifold2D):
-    name = "T2"
+    name = "T^2"
     manifold = Manifold(
         M=[Interval("M_1", 0, 2 * pi), Interval("M_2", 0, 2 * pi)],
         charts=[

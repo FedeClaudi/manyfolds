@@ -93,7 +93,7 @@ class Manifold1D(BaseManifold):
 
 
 class Circle(Manifold1D):
-    name = "S_1"
+    name = "S^1"
     manifold = Manifold(
         M=Interval("M", 0, 2 * pi),
         charts=[
@@ -115,7 +115,7 @@ class Circle(Manifold1D):
 
 
 class Line(Manifold1D):
-    name = "R_1"
+    name = "R^1"
     manifold = Manifold(
         M=Interval("M", 0, 1),
         charts=[

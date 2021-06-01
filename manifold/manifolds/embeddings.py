@@ -82,7 +82,7 @@ def circle_to_r3_angled(p):
 
 @parse
 def circle_to_r3(p):
-    return (2 * sin(p), cos(p), cos(p) ** 2 + 0.5)
+    return (sin(p), 0.8 * cos(p), cos(p * 2) ** 2 * 0.5 + 0.5)
 
 
 # ---------------------------------- sphere ---------------------------------- #
@@ -99,7 +99,7 @@ def plane_to_r3_flat(p0, p1):
 
 @parse2D
 def plane_to_r3(p0, p1):
-    return (p0, sin(p1), (p1 - p0) ** 2)
+    return (p0, sin(p1), 0.6 * (p1 - p0) ** 2)
 
 
 # ----------------------------------- torus ---------------------------------- #
@@ -178,7 +178,7 @@ def prepare_circle_to_rn(n=64):
 
 
 @parse
-def circle_to_rn_flat(v, m, p):
+def circle_to_rn_angled(v, m, p):
     """
         Embedding of a circle in a random 2D plane in R^n
         from: https://math.stackexchange.com/questions/1184038/what-is-the-equation-of-a-general-circle-in-3-d-space
@@ -189,12 +189,12 @@ def circle_to_rn_flat(v, m, p):
     return tuple(coords)
 
 
-def prepare_circle_falt_to_rn(n=64):
+def prepare_circle_angled_to_rn(n=64):
     x = ortho_group.rvs(n)
     v = x[:, 0]
     m = x[:, 1]
 
-    return partial(circle_to_rn_flat, v, m)
+    return partial(circle_to_rn_angled, v, m)
 
 
 # ----------------------------------- helix ---------------------------------- #
@@ -234,7 +234,7 @@ def sphere_to_rn(mtx, p):
 
 
 def prepare_sphere_to_rn(n=64):
-    mtx = np.random.rand(n, 3)
+    mtx = ortho_normal_matrix(n, 3)
 
     return partial(sphere_to_rn, mtx)
 

@@ -22,7 +22,7 @@ def take_derivative_at_point(arr, idx):
     return derivative.T
 
 
-def get_basis_tangent_vector(point, base_function, embedding):
+def get_basis_tangent_vector(point, base_function):
     return take_derivative_at_point(
         base_function.embedded, base_function.embedded_point_index
     )

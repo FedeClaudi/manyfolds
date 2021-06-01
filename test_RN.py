@@ -6,7 +6,7 @@ from manifold.rnn import RNN
 from manifold import vectors_fields
 from manifold import Visualizer
 
-MANIFOLD = "circle"
+MANIFOLD = "sphere"
 N = 12
 K = 6
 
@@ -23,13 +23,14 @@ elif MANIFOLD == "helix":
 
 elif MANIFOLD == "circle":
     logger.debug("Circle manifold")
-    M = Circle(embeddings.prepare_circle_to_rn(n=N), n_sample_points=10)
+    M = Circle(embeddings.prepare_circle_angled_to_rn(n=N), n_sample_points=10)
     pca_sample_points = 100
+    M.vectors_field = vectors_fields.double_sin
 
 
 elif MANIFOLD == "torus":
     logger.debug("Torus manifold")
-    M = Torus(embeddings.prepare_torus_to_rn(n=N), n_sample_points=[4, 2])
+    M = Torus(embeddings.prepare_torus_to_rn(n=N), n_sample_points=[4, 4])
     pca_sample_points = 60
 
     M.vectors_field = vectors_fields.second_only
@@ -45,7 +46,7 @@ elif MANIFOLD == "sphere":
 elif MANIFOLD == "cylinder":
     logger.debug("Cylinder manifold")
     M = Cylinder(
-        embeddings.prepare_cylinder_to_rn(n=N), n_sample_points=[4, 4]
+        embeddings.prepare_cylinder_to_rn(n=N), n_sample_points=[3, 4]
     )
     pca_sample_points = 20
 
@@ -59,12 +60,9 @@ else:
 
 M.print_embedding_bounds()
 
-# set vector field
-# M.vectors_field = vectors_fields.sphere_equator
-
 # fit and run RNN
 rnn = RNN(M, n_units=N)
-rnn.build_W(k=K, scale=0.001)
+rnn.build_W(k=K, scale=100)
 rnn.run_points(n_seconds=5)
 
 

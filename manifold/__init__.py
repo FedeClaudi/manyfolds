@@ -13,3 +13,7 @@ from manifold.manifolds import (
     Cylinder,
 )
 from manifold.visualize import Visualizer
+
+from vedo import settings
+
+settings.screenshotTransparentBackground = 1

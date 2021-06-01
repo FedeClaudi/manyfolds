@@ -5,21 +5,21 @@ from manifold import vectors_fields
 from manifold import Visualizer
 
 K = 32
-MANIFOLD = "cylinder"
+MANIFOLD = "torus"
 
 if MANIFOLD == "plane":
-    M = Plane(embeddings.plane_to_r, n_sample_points=[3, 2])
+    M = Plane(embeddings.plane_to_r3, n_sample_points=[3, 2])
     x_range = [0.3, 0.3]
 
 elif MANIFOLD == "torus":
     M = Torus(embeddings.torus_to_r3, n_sample_points=[8, 0])
     x_range = [0.1, 0.05]
-    M.vectors_field = vectors_fields.scale_second
+    M.vectors_field = vectors_fields.second_only
 
 elif MANIFOLD == "sphere":
-    M = Sphere(embeddings.sphere_to_r3, n_sample_points=[4, 3])
+    M = Sphere(embeddings.sphere_to_r3, n_sample_points=[4, 10])
     x_range = [0.02, 0.02]
-    M.vectors_field = vectors_fields.sphere_equator
+    M.vectors_field = vectors_fields.second_only
 
 elif MANIFOLD == "cylinder":
     M = Cylinder(embeddings.cylinder_to_r3_as_cone, n_sample_points=[6, 2])
@@ -31,10 +31,10 @@ elif MANIFOLD == "cylinder":
 
 # create RNN
 rnn = RNN(M, n_units=3)
-rnn.build_W(k=K, scale=0.001)
+rnn.build_W(k=K, scale=100)
 rnn.run_points(n_seconds=10)
 
 
 # visualize in embedding
 viz = Visualizer(M, rnn)
-viz.show(x_range=0.2, scale=0.25)
+viz.show(x_range=0.2, scale=0.27)

@@ -66,9 +66,7 @@ class BaseFunction:
         if self.embedded is None:
             self.embedd()
 
-        return get_basis_tangent_vector(
-            self.point, self, self.point.embedding_map
-        )
+        return get_basis_tangent_vector(self.point, self)
 
 
 @dataclass
@@ -108,6 +106,17 @@ class BaseFunction2D:
             ).sample(n=N)
         )
 
+        # ensure domain [0, 1]
+        # if np.any(domain < 0):
+        #     cut = np.where(domain < 0)[0][-1]
+        #     domain = domain[cut:]
+        #     self.embedded_point_index -= cut
+        #     N -= cut
+        # if np.any(domain > 1):
+        #     cut = np.where(domain > 0)[0][0]
+        #     domain = domain[:cut]
+        #     N = cut
+
         # get points in the embedding
         # 1. map the domain of f to the chart's local coordinates
         # keep one dimension fixed and vary the other
@@ -131,6 +140,4 @@ class BaseFunction2D:
         if self.embedded is None:
             self.embedd()
 
-        return get_basis_tangent_vector(
-            self.point, self, self.point.embedding_map
-        )
+        return get_basis_tangent_vector(self.point, self,)
