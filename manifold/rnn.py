@@ -1,9 +1,11 @@
-import numpy as np
+import autograd.numpy as np
 from loguru import logger
 from dataclasses import dataclass
 from rich.progress import track
+from autograd import elementwise_grad as egrad
 
-from manifold.maths import tanh, unit_vector
+
+from manifold.maths import unit_vector
 from manifold.tangent_vector import get_tangent_vector
 
 
@@ -29,7 +31,6 @@ class InputsBase:
 
 class RNN:
     dt = 0.003
-    sigma = tanh
 
     traces = []  # stores results of runnning RNN on initial conditions
     B = None  # place holder for connections matrix
@@ -45,12 +46,18 @@ class RNN:
         self.n_units = n_units
         self.n_inputs = n_inputs
 
+        self.sigma = np.tanh
+        self.sigma_gradient = egrad(self.sigma)
+
     @staticmethod
     def _solve_eqs_sys(Xs, Ys):
-        X = np.vstack(Xs).T
-        Y = np.linalg.pinv(np.vstack(Ys).T)
-        noise = np.random.normal(0, 1e-10, size=Y.shape)
-        return X @ (Y + noise)
+        # X = np.vstack(Xs).T
+        # Y = np.linalg.pinv(np.vstack(Ys).T)
+        X = np.vstack(Xs)
+        Y = np.vstack(Ys)
+
+        noise = np.random.normal(0, 1e-6, size=Y.shape)
+        return np.linalg.lstsq(X, Y + noise, rcond=-1)[0]
 
     def build_B(self, k=10, vector_fields=None):
         """
@@ -64,7 +71,10 @@ class RNN:
                     to elements of the tangent vector spce at that point.
         """
         if vector_fields is not None:
-            if isinstance(vector_fields, list) and len(vector_fields) != self.n_inputs:
+            if (
+                isinstance(vector_fields, list)
+                and len(vector_fields) != self.n_inputs
+            ):
                 raise ValueError(
                     "When passing vector fields to build_B you need as manu fields as there are inputs to the RNN"
                 )
@@ -122,27 +132,39 @@ class RNN:
         points = self.manifold.sample(n=k - 1, fill=True, full=True)
         if len(points) != k and len(points) != k ** 2:
             raise ValueError(f"Got {len(points)} points with k={k}")
-        # logger.debug([p.coordinates for p in points])
 
-        # get all the vectors
-        v = []  # tangent vectors
-        s = []  # states through non-linearity
+        # identity matrix for right hand side
+        I_d = np.eye(self.manifold.d) * 1 / self.dt
+        sing_val = 0.1
+
+        # get sys of equations for each point
+        lhs = []  # U^T . \Phi
+        rhs = []  # tau(Eps + 1/t I_d).dot U^T
         for point in points:
             # get the network's h_dot as a sum of base function tangent vectors
-            vec = get_tangent_vector(point, self.manifold.vectors_field)
+            U_transpose = get_tangent_vector(
+                point, self.manifold.vectors_field
+            )
 
-            # keep track for each point to build sys of equations
-            v.append(vec)
-            s.append(self.sigma(point.embedded))
+            # Get derivative of non-linear function
+            Phi = np.diag(
+                np.squeeze(self.sigma_gradient(np.array(point.embedded)))
+            )
+
+            # store LHS
+            lhs.append(U_transpose.dot(Phi))
+
+            # store RHS
+            rhs.append(self.dt * (I_d + sing_val) * U_transpose)
 
         # get W
-        self.W = self._solve_eqs_sys(v, s) * self.dt * scale
+        self.W = self._solve_eqs_sys(lhs, rhs)  # * self.dt * scale
         logger.debug(f"RNN connection matrix shape: {self.W.shape}")
 
     def step(self, h, inputs=None):
         h = np.array(h)
         if inputs is None:
-            hdot = self.W.dot(self.sigma(h))
+            hdot = self.W.T.dot(self.sigma(h))
         else:
             if self.B is None:
                 raise ValueError(

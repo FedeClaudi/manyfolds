@@ -6,9 +6,9 @@ from manifold.rnn import RNN
 from manifold import vectors_fields
 from manifold import Visualizer
 
-MANIFOLD = "sphere"
-N = 12
-K = 6
+MANIFOLD = "circle"
+N = 200
+K = 64
 
 # get manifold
 if MANIFOLD == "line":
@@ -58,7 +58,6 @@ elif MANIFOLD == "plane":
 else:
     raise NotImplementedError
 
-M.print_embedding_bounds()
 
 # fit and run RNN
 rnn = RNN(M, n_units=N)

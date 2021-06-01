@@ -9,10 +9,9 @@ if MANIFOLD == "line":
     M = Line(embeddings.line_to_r3, n_sample_points=3)
 elif MANIFOLD == "helix":
     M = Line(embeddings.helix_to_r3, n_sample_points=3)
-
 elif MANIFOLD == "circle":
-    M = Circle(embeddings.circle_to_r3_angled, n_sample_points=8)
-M.print_embedding_bounds()
+    M = Circle(embeddings.circle_to_r3_flat, n_sample_points=8)
+
 
 # define vector field
 # M.vectors_field = vectors_fields.sin
@@ -20,7 +19,7 @@ M.print_embedding_bounds()
 
 # create RNN
 rnn = RNN(M, n_units=3)
-rnn.build_W(k=32, scale=100)
+rnn.build_W(k=64, scale=100)
 rnn.run_points(n_seconds=10)
 
 # visualize in embedding
