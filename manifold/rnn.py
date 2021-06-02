@@ -6,10 +6,7 @@ from autograd import elementwise_grad as egrad
 
 
 from manifold.maths import unit_vector
-from manifold.tangent_vector import (
-    get_tangent_vector,
-    get_basis_tangent_vector,
-)
+from manifold.tangent_vector import get_tangent_vector
 
 
 @dataclass
@@ -57,13 +54,11 @@ class RNN:
 
     @staticmethod
     def _solve_eqs_sys(Xs, Ys):
-        # X = np.vstack(Xs).T
-        # Y = np.linalg.pinv(np.vstack(Ys).T)
-        X = np.vstack(Xs)
-        Y = np.vstack(Ys)
-
-        noise = np.random.normal(0, 1e-6, size=Y.shape)
-        return np.linalg.lstsq(X, Y + noise, rcond=-1)[0]
+        X = np.vstack(Xs).T
+        Y = np.linalg.pinv(np.vstack(Ys).T)
+        # noise = np.random.normal(0, 1e-6, size=X.shape)
+        noise = np.random.randn(*Y.shape) * 1e-6
+        return X @ (Y + noise)
 
     def build_B(self, k=10, vector_fields=None):
         """
@@ -136,58 +131,31 @@ class RNN:
         logger.debug(f"RNN - building connectivity matrix with {k} points")
 
         # sample points
-        points = self.manifold.sample(n=k - 1, fill=True, full=True)
+        if self.d == 2:
+            # make sure not to oversample
+            k = int(np.ceil(np.sqrt(k)))
+        points = self.manifold.sample(n=k - 1, fill=True, full=False)
         if len(points) != k and len(points) != k ** 2:
             raise ValueError(f"Got {len(points)} points with k={k}")
 
-        # identity matrix for right hand side
-        U_t = np.eye(self.n)
-        Sigma = np.eye(self.n) * (-1 / self.dt)
-
-        # get sys of equations for each point
-        lhs = []  # U^T . \Phi
-        rhs = []  # tau(Eps + 1/t I_d).dot U^T
+        # get all the vectors
+        v = []  # tangent vectors
+        s = []  # states through non-linearity
         for point in points:
             # get the network's h_dot as a sum of base function tangent vectors
-            for fn in point.base_functions:
-                fn.embedd(x_range=0.2)
+            vec = get_tangent_vector(point, self.manifold.vectors_field)
 
-            U_transpose_target = np.vstack(
-                [
-                    unit_vector(get_basis_tangent_vector(point, fn))
-                    for fn in point.base_functions
-                ]
-            )
-            U_transpose = U_t.copy()
-            U_transpose[: self.d, :] = U_transpose_target
-
-            print(U_transpose)
-
-            # Get derivative of non-linear function
-            Phi = np.diag(
-                np.squeeze(self.sigma_gradient(np.array(point.embedded)))
-            )
-
-            # store LHS
-            lhs.append(U_transpose @ Phi)
-
-            # store RHS
-            sigma_target = (
-                np.diag(self.manifold.vectors_field(point)) * 1 / self.dt
-            )
-            sigma = Sigma.copy()
-            sigma[: self.d, : self.d] = sigma_target
-
-            print(sigma)
-            rhs.append(self.dt * sigma @ U_transpose)
+            # keep track for each point to build sys of equations
+            v.append(vec)
+            s.append(self.sigma(point.embedded))
 
         # get W
-        self.W = self._solve_eqs_sys(lhs, rhs)  # * self.dt * scale
+        self.W = self._solve_eqs_sys(v, s) * self.dt * scale
         logger.debug(f"RNN connection matrix shape: {self.W.shape}")
 
     def step(self, h, inputs=None):
         h = np.array(h)
-        hdot = self.W.T.dot(self.sigma(h))
+        hdot = self.W.dot(self.sigma(h))
 
         if inputs is not None:
             if self.B is None:
@@ -206,7 +174,7 @@ class RNN:
             h = self.step(h, inputs=inputs)
             trace[n, :] = h
 
-            if np.linalg.norm(h) >= 3 and n > 1 and cut:
+            if np.linalg.norm(h) >= 5 and n > 1 and cut:
                 trace = trace[:n, :]
                 break  # too far from origin
 

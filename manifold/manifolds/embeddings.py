@@ -88,7 +88,7 @@ def circle_to_r3(p):
 # ---------------------------------- sphere ---------------------------------- #
 @parse2D
 def sphere_to_r3(p0, p1):
-    return (sin(p0) * cos(p1) * 0.75, sin(p0) * sin(p1) * 0.75, cos(p0) * 0.75)
+    return (sin(p0) * cos(p1), sin(p0) * sin(p1), cos(p0))
 
 
 # ----------------------------------- plane ---------------------------------- #
@@ -105,7 +105,7 @@ def plane_to_r3(p0, p1):
 # ----------------------------------- torus ---------------------------------- #
 @parse2D
 def torus_to_r3(p0, p1):
-    R = 0.5  # torus center -> tube center
+    R = 0.75  # torus center -> tube center
     r = 0.25  # tube radius
     return (
         (R + r * cos(p0)) * cos(p1),
@@ -190,7 +190,11 @@ def circle_to_rn_angled(v, m, p):
 
 
 def prepare_circle_angled_to_rn(n=64):
-    x = ortho_group.rvs(n)
+    x = ortho_normal_matrix(n, 2)
+    # np.save('x.npy', x)
+    # x = np.load('x.npy')
+    # print(x)
+    # print(ortho_normal_matrix(n, 2))
     v = x[:, 0]
     m = x[:, 1]
 
@@ -235,6 +239,7 @@ def sphere_to_rn(mtx, p):
 
 def prepare_sphere_to_rn(n=64):
     mtx = ortho_normal_matrix(n, 3)
+    # mtx = np.load('x.npy')
 
     return partial(sphere_to_rn, mtx)
 
@@ -286,7 +291,7 @@ def torus_to_rn(mtx, p):
 
 
 def prepare_torus_to_rn(n=64):
-    mtx = ortho_group.rvs(n)[:, :3]
+    mtx = ortho_normal_matrix(n, 3)
     return partial(torus_to_rn, mtx)
 
 
@@ -305,3 +310,19 @@ def cylinder_to_rn(mtx, p):
 def prepare_cylinder_to_rn(n=64):
     mtx = ortho_group.rvs(n)[:, :3]
     return partial(cylinder_to_rn, mtx)
+
+
+def cylinder_as_cone_to_rn(mtx, p):
+    """
+        Embedd a cylinder by first embedding it in
+        R3 and then using a linear transformatin
+        to Rn
+    """
+    cylinder_3d = cylinder_to_r3_as_cone(p)
+    embedded = mtx @ np.array(cylinder_3d)
+    return tuple(embedded)
+
+
+def prepare_cylinder_as_cone_to_rn(n=64):
+    mtx = ortho_normal_matrix(n, 3)
+    return partial(cylinder_as_cone_to_rn, mtx)

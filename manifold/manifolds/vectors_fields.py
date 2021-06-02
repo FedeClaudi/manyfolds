@@ -124,7 +124,9 @@ def sphere_equator(point):
     """
         Pushes the dynamics towards the equator of the sphere
     """
-    return (np.cos(point.coordinates[0]), 0)
+    cos = np.cos(point.coordinates[0])
+    cos2 = np.cos(2 * point.coordinates[0])
+    return (cos, (1 - cos2) * 0.8)
 
 
 @sel_args

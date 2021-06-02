@@ -33,15 +33,7 @@ rnn.build_W(k=K, scale=100)
 rnn.run_points(n_seconds=10)
 
 # visualize in embedding
-viz = Visualizer(
-    M,
-    rnn,
-    axes=0,
-    manifold_color="#b8b6d1",
-    point_color="#3838BA",
-    wireframe=False,
-    manifold_alpha=0.5,
-)
+viz = Visualizer(M, rnn, axes=0, manifold_alpha=0.5,)
 viz.show(x_range=0.07, scale=0.25)
 
 

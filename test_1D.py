@@ -13,7 +13,7 @@ if MANIFOLD == "line":
 elif MANIFOLD == "helix":
     M = Line(embeddings.helix_to_r3, n_sample_points=3)
 elif MANIFOLD == "circle":
-    M = Circle(embeddings.circle_to_r3_flat, n_sample_points=12)
+    M = Circle(embeddings.circle_to_r3_flat, n_sample_points=1)
 
 
 # define vector field

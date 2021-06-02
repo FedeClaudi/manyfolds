@@ -3,10 +3,18 @@ import itertools
 from loguru import logger
 
 
+def gram_schmidt(vectors):
+    basis = []
+    for v in vectors.T:
+        w = v - np.sum(np.dot(v, b) * b for b in basis)
+        if (w > 1e-10).any():
+            basis.append(w / np.linalg.norm(w))
+    return np.array(basis).T
+
+
 def ortho_normal_matrix(n, m):
-    H = np.random.rand(n, m)
-    u, s, vh = np.linalg.svd(H, full_matrices=False)
-    return u @ vh
+    X = np.random.randn(n, m)
+    return gram_schmidt(X)
 
 
 def ReLU(_, x):

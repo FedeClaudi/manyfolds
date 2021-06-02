@@ -1,6 +1,7 @@
 import numpy as np
 from rich.table import Table
-from rich import print
+
+# from rich import print
 from loguru import logger
 
 from myterial import pink
@@ -68,9 +69,10 @@ class BaseManifold:
             lows.append(low)
             highs.append(high)
             tb.add_row(str(dim), f"min: {low:.2f} | max: {high:.2f}")
-        print(tb)
+        # print(tb)
         logger.debug(
             f"Manifold bounds: low: {np.min(lows):.2f} | max: {np.max(highs):.2f}"
+            + f"Average bounds: {np.mean(lows):.2f} | {np.mean(highs):.2f}"
         )
 
     def _fill_points_data(self, points):

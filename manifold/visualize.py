@@ -12,12 +12,9 @@ from vedo import (
 )
 
 from myterial import (
-    grey,
     salmon,
     green,
     black,
-    blue_light,
-    indigo,
     deep_purple,
 )
 
@@ -25,8 +22,8 @@ from manifold.tangent_vector import (
     get_tangent_vector,
     get_basis_tangent_vector,
 )
-from manifold._visualize import blue_dark, make_palette
 from manifold.maths import unit_vector
+
 
 class Visualizer:
     actors = []
@@ -38,16 +35,16 @@ class Visualizer:
         pca_sample_points=64,
         point_color=None,
         camera=None,
-        manifold_alpha=1,
+        manifold_alpha=0.7,
         axes=None,
-        wireframe=True,
+        wireframe=False,
         manifold_color=None,
     ):
         self.manifold = manifold
         self.rnn = rnn
         self.wireframe = wireframe
-        self.manifold_color = manifold_color or grey
-        self.point_color = point_color or blue_dark
+        self.manifold_color = manifold_color or "#b8b6d1"
+        self.point_color = point_color or "#3838BA"
         self.manifold_alpha = manifold_alpha
 
         if self.manifold.n > 3:
@@ -124,7 +121,7 @@ class Visualizer:
     def _reconstruct_surface(self, coordinates):
         # plot points
         manifold = (
-            recoSurface(coordinates, dims=(50, 50, 50), radius=0.15)
+            recoSurface(coordinates, dims=(50, 50, 50), radius=0.3)
             .c(self.manifold_color)
             .clean()
         )
@@ -147,7 +144,7 @@ class Visualizer:
                 if self.manifold.name in ("S^2", "Cy", "T^2"):
                     if self.manifold.name == "S^2":
                         # plot a sphere
-                        manifold = Sphere(r=0.75, c=self.manifold_color)
+                        manifold = Sphere(r=0.98, c=self.manifold_color)
 
                     elif self.manifold.name == "Cy":
                         # plot a cylinder
@@ -163,8 +160,8 @@ class Visualizer:
                     elif self.manifold.name == "T^2":
                         # plot a torus
                         manifold = Torus(
-                            r=0.5,
-                            thickness=0.25,
+                            r=0.73,
+                            thickness=0.24,
                             c=self.manifold_color,
                             res=20,
                         )
@@ -183,7 +180,7 @@ class Visualizer:
                 manifold = self._reconstruct_surface(self.embedded_lowd)
             else:
                 manifold = Line(
-                    self.embedded_lowd, c=self.manifold_color, lw=12
+                    self.embedded_lowd, c=self.manifold_color, lw=4
                 )
                 self.actors.append(manifold)
 
@@ -262,7 +259,7 @@ class Visualizer:
 
         # visualize inputs basis vector
         # colors = make_palette(blue_light, indigo, self.rnn.n_inputs)
-        colors = ['r', 'r', 'r', 'r', 'g', 'g', 'g', 'g']
+        colors = ["r", "r", "r", "r", "g", "g", "g", "g"]
         for base in self.rnn.inputs_basis:
             for point in self.manifold.points:
                 self._render_cylinder(
@@ -277,7 +274,7 @@ class Visualizer:
         if rnn_inputs is not None:
             if len(rnn_inputs.shape) == 1:
                 rnn_inputs = rnn_inputs.reshae(1, -1)
-            
+
             for idx in np.arange(rnn_inputs.shape[0]):
                 try:
                     vec = unit_vector(self.rnn.B.T @ rnn_inputs[idx])
@@ -288,9 +285,10 @@ class Visualizer:
 
                 for point in self.manifold.points:
                     self._render_cylinder(
-                        [point.embedded, point.embedded + vec], deep_purple, r=0.02
+                        [point.embedded, point.embedded + vec],
+                        deep_purple,
+                        r=0.02,
                     )
-
 
     def visualize_rnn_traces(self):
         for trace in self.rnn.traces:
