@@ -24,6 +24,8 @@ rnn = RNN(M, n_units=N)
 rnn.build_W(k=K)
 rnn.run_points(n_seconds=10)
 
+print(rnn.W)
+
 # visualize in embedding
 viz = Visualizer(M, rnn)
 viz.show(x_range=0.07, scale=0.25)

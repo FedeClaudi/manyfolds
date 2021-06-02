@@ -52,18 +52,21 @@ class RNN:
         self.sigma = np.tanh
         self.sigma_gradient = egrad(self.sigma)
 
-        self.d = self.manifold.d
         self.n = self.manifold.n
+        self.d = self.manifold.d
 
     @staticmethod
     def _solve_eqs_sys(Xs, Ys):
-        # X = np.vstack(Xs).T
-        # Y = np.linalg.pinv(np.vstack(Ys).T)
-        X = np.vstack(Xs)
-        Y = np.vstack(Ys)
-
+        X = np.vstack(Xs).T
+        Y = np.linalg.pinv(np.vstack(Ys).T)
         noise = np.random.normal(0, 1e-6, size=Y.shape)
-        return np.linalg.lstsq(X, Y + noise, rcond=-1)[0]
+        return X @ (Y + noise)
+
+        # X = np.vstack(Xs)
+        # Y = np.vstack(Ys)
+
+        # noise = np.random.normal(0, 1e-6, size=Y.shape)
+        # return np.linalg.lstsq(X + noise, Y, rcond=-1)[0]
 
     def build_B(self, k=10, vector_fields=None):
         """
@@ -140,11 +143,8 @@ class RNN:
         if len(points) != k and len(points) != k ** 2:
             raise ValueError(f"Got {len(points)} points with k={k}")
 
-        # identity matrix for right hand side
-        U_t = np.eye(self.n)
-        Sigma = np.eye(self.n) * (-1 / self.dt)
-
         # get sys of equations for each point
+        I_d = np.eye(self.d) * 1 / self.dt
         lhs = []  # U^T . \Phi
         rhs = []  # tau(Eps + 1/t I_d).dot U^T
         for point in points:
@@ -152,16 +152,12 @@ class RNN:
             for fn in point.base_functions:
                 fn.embedd(x_range=0.2)
 
-            U_transpose_target = np.vstack(
+            U_transpose = np.vstack(
                 [
                     unit_vector(get_basis_tangent_vector(point, fn))
                     for fn in point.base_functions
                 ]
             )
-            U_transpose = U_t.copy()
-            U_transpose[: self.d, :] = U_transpose_target
-
-            print(U_transpose)
 
             # Get derivative of non-linear function
             Phi = np.diag(
@@ -172,17 +168,11 @@ class RNN:
             lhs.append(U_transpose @ Phi)
 
             # store RHS
-            sigma_target = (
-                np.diag(self.manifold.vectors_field(point)) * 1 / self.dt
-            )
-            sigma = Sigma.copy()
-            sigma[: self.d, : self.d] = sigma_target
-
-            print(sigma)
-            rhs.append(self.dt * sigma @ U_transpose)
+            sigma = np.diag(self.manifold.vectors_field(point))
+            rhs.append(self.dt * (sigma + I_d) @ U_transpose)
 
         # get W
-        self.W = self._solve_eqs_sys(lhs, rhs)  # * self.dt * scale
+        self.W = self._solve_eqs_sys(lhs, rhs)
         logger.debug(f"RNN connection matrix shape: {self.W.shape}")
 
     def step(self, h, inputs=None):

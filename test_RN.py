@@ -6,9 +6,9 @@ from manifold.rnn import RNN
 from manifold import vectors_fields
 from manifold import Visualizer
 
-MANIFOLD = "circle"
+MANIFOLD = "torus"
 N = 64
-K = 10
+K = 2
 
 # get manifold
 if MANIFOLD == "line":
@@ -63,7 +63,7 @@ else:
 # fit and run RNN
 rnn = RNN(M, n_units=N)
 rnn.build_W(k=K, scale=100)
-rnn.run_points(n_seconds=0.5)
+rnn.run_points(n_seconds=50)
 
 
 viz = Visualizer(M, rnn=rnn, pca_sample_points=pca_sample_points)
