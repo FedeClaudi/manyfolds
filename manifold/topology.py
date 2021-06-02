@@ -29,6 +29,18 @@ class Point:
         """ coordinates as arrays """
         return np.array(self.coordinates)
 
+    def clone(self):
+        pt = Point(self.coordinates, self.embedding_map)
+
+        try:
+            pt.embedded = self.embedded
+            pt.chart_coordinates = self.chart_coordinates
+            pt.chart = self.chart
+            pt.base_functions = self.base_functions
+        except Exception:
+            pass
+        return pt
+
 
 @dataclass
 class Interval:

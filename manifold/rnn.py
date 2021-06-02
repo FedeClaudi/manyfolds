@@ -56,7 +56,7 @@ class RNN:
     def _solve_eqs_sys(Xs, Ys):
         X = np.vstack(Xs).T
         Y = np.linalg.pinv(np.vstack(Ys).T)
-        # noise = np.random.normal(0, 1e-6, size=X.shape)
+        # noise_x = np.random.normal(0, 1e-10, size=X.shape)
         noise = np.random.randn(*Y.shape) * 1e-6
         return X @ (Y + noise)
 
@@ -144,10 +144,16 @@ class RNN:
         for point in points:
             # get the network's h_dot as a sum of base function tangent vectors
             vec = get_tangent_vector(point, self.manifold.vectors_field)
+            # v.append(vec)
+            # s.append(self.sigma(point.embedded))
 
-            # keep track for each point to build sys of equations
+            # repeat but with noise shift
+            embedded = np.array(point.embedded)
+            shift = np.random.randn(*embedded.shape) * 1e-6
+            vec = vec - shift
+
             v.append(vec)
-            s.append(self.sigma(point.embedded))
+            s.append(self.sigma(embedded + shift))
 
         # get W
         self.W = self._solve_eqs_sys(v, s) * self.dt * scale

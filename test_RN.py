@@ -33,9 +33,9 @@ elif MANIFOLD == "helix":
 
 elif MANIFOLD == "circle":
     logger.debug("Circle manifold")
-    M = Circle(embeddings.prepare_circle_to_rn(n=N), n_sample_points=6)
+    M = Circle(embeddings.prepare_circle_angled_to_rn(n=N), n_sample_points=6)
     pca_sample_points = 50
-    # M.vectors_field = vectors_fields.double_sin
+    M.vectors_field = vectors_fields.double_sin
 
 elif MANIFOLD == "torus":
     logger.debug("Torus manifold")
@@ -50,7 +50,7 @@ elif MANIFOLD == "sphere":
     M = Sphere(embeddings.prepare_sphere_to_rn(n=N), n_sample_points=[4, 4])
     pca_sample_points = 75
 
-    M.vectors_field = vectors_fields.second_only
+    # M.vectors_field = vectors_fields.second_only
 
     if K != 12:
         logger.warning("Sphere manifold prefers K = 12")

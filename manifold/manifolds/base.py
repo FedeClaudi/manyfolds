@@ -80,7 +80,7 @@ class BaseManifold:
         )
 
         # get center of mass
-        logger.debug(f"Manifold CoM:\n{self.CoM}")
+        logger.debug(f"Manifold CoM: {self.CoM.mean():.2f}")
 
     def _fill_points_data(self, points):
         """

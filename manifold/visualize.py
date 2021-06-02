@@ -46,6 +46,7 @@ class Visualizer:
         axes=None,
         wireframe=False,
         manifold_color=None,
+        mark_rnn_endpoint=False,
     ):
         self.manifold = manifold
         self.rnn = rnn
@@ -53,6 +54,7 @@ class Visualizer:
         self.manifold_color = manifold_color or "#b8b6d1"
         self.point_color = point_color or "#3838BA"
         self.manifold_alpha = manifold_alpha
+        self.mark_rnn_endpoint = mark_rnn_endpoint
 
         if self.manifold.n > 3:
             self.pca_sample_points = pca_sample_points
@@ -314,6 +316,15 @@ class Visualizer:
             self.actors.append(
                 Tube(coordinates, c=salmon, r=rnn_trace_radius,)
             )
+
+            if self.mark_rnn_endpoint:
+                point = Sphere(
+                    coordinates[-1, :],
+                    c=[0.3, 0.3, 0.3],
+                    r=point_size + 0.2 * point_size,
+                )
+                self._add_silhouette(point)
+                self.actors.append(point)
 
     def show(self, scale=1, x_range=0.05, rnn_inputs=None, **kwargs):
         self.visualize_manifold()

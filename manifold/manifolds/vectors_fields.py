@@ -33,7 +33,12 @@ def sel_args(func):
 
 @sel_args
 def identity(point):
-    return tuple([0.2 for n in range(point.d)])
+    return tuple([1 for n in range(point.d)])
+
+
+@sel_args
+def small_identity(point):
+    return tuple([0.5 for n in range(point.d)])
 
 
 @sel_args

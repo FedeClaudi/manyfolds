@@ -4,7 +4,7 @@ from scipy.stats import ortho_group
 from functools import partial
 
 from manifold.topology import Point
-from manifold.maths import ortho_normal_matrix
+from manifold.maths import ortho_normal_matrix, unit_vector, gram_schmidt
 
 # --------------------------------- wrappers --------------------------------- #
 
@@ -185,18 +185,16 @@ def circle_to_rn_angled(v, m, p):
     """
     # define points on the circle of radius 1: 𝑟(cos𝑡)𝐯1+𝑟(sin𝑡)𝐯
     coords = cos(p) * v + sin(p) * m
+    coords *= 2
 
     return tuple(coords)
 
 
 def prepare_circle_angled_to_rn(n=64):
-    x = ortho_normal_matrix(n, 2)
-    # np.save('x.npy', x)
-    # x = np.load('x.npy')
-    # print(x)
-    # print(ortho_normal_matrix(n, 2))
-    v = x[:, 0]
-    m = x[:, 1]
+    # x = ortho_normal_matrix(n, 2)
+    x = gram_schmidt(np.random.randn(n, 2)) * 12
+    v = unit_vector(x[:, 0])
+    m = unit_vector(x[:, 1])
 
     return partial(circle_to_rn_angled, v, m)
 
