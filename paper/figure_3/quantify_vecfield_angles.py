@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from fcutils.plot.figure import clean_axes
+from fcutils.plot.distributions import plot_kde
 
 from manifold import Plane, embeddings, vectors_fields
 from manifold.rnn import RNN
@@ -16,10 +17,10 @@ from manifold.maths import angle_between
 plt.rc("text", usetex=True)
 plt.rc("font", family="serif")
 
-N = 12
-K = 32
+N = 64
+K = 15
 n_points = 40
-n_sec = 0.25
+n_sec = 5
 
 
 f, ax = plt.subplots()
@@ -27,9 +28,9 @@ clean_axes(f)
 
 
 fields = dict(
-    identity=vectors_fields.identity,
-    first=vectors_fields.first_only,
-    second=vectors_fields.second_only,
+    F1=vectors_fields.torus_second,
+    F2=vectors_fields.sphere_equator,
+    F3=vectors_fields.sphere_base,
 )
 
 bins = np.linspace(0, 1, 20)
@@ -40,23 +41,25 @@ for F in fields.keys():
     # create RNN
     rnn = RNN(M, n_units=3)
     rnn.traces = []
-    rnn.build_W(k=K, scale=100)
+    rnn.build_W(k=K, scale=1)
     rnn.run_points(n_seconds=n_sec)
 
     # get angles
     angles = []
     for n, trace in enumerate(rnn.traces):
         rnn_vec = trace.trace[-1] - trace.trace[0]
-        if np.linalg.norm(rnn_vec) == 0:
-            continue
         tan_vec = get_tangent_vector(M.points[n], vectors_field=fields[F])
+
+        if np.linalg.norm(rnn_vec) <= 1e-4 or np.linalg.norm(tan_vec) <= 1e-4:
+            continue
 
         angles.append(angle_between(rnn_vec, tan_vec))
 
-    ax.hist(angles, label=f"{F}", bins=bins, alpha=0.5, density=True)
+    # ax.hist(angles, label=f"{F}", bins=bins, alpha=0.5, density=True)
+    plot_kde(ax=ax, data=angles, label=f"{F}")
 ax.legend()
 plt.show()
-ax.set(xlabel="$\theta (rad)$", ylabel="density")
+ax.set(xlabel=r"$\theta (rad)$", ylabel="density")
 f.savefig(f"paper/figure_3/angles_N_{N}.svg", format="svg")
 
 

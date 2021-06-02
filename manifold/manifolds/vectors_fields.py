@@ -67,6 +67,11 @@ def sin(point):
 
 
 @sel_args
+def cos(point):
+    return (np.cos(point[0] * 2),)
+
+
+@sel_args
 def double_sin(point):
     return (np.sin(point[0] * 4),)
 
@@ -126,7 +131,7 @@ def sphere_equator(point):
     """
     cos = np.cos(point.coordinates[0])
     cos2 = np.cos(2 * point.coordinates[0])
-    return (cos * 0.4, (1 - cos2) * 1)
+    return (cos * 0.8, (1 - cos2) * 1)
 
 
 @sel_args
@@ -144,7 +149,7 @@ def sphere_base(point):
     """
         Pushes the dynamics towards the poles of the sphere
     """
-    return (-np.cos(point.coordinates[0]), 0.5)
+    return (-np.cos(point.coordinates[0]) * 0.5, 0.25)
 
 
 @sel_args
@@ -153,7 +158,7 @@ def sphere_base2(point):
     """
         Pushes the dynamics towards the poles of the sphere
     """
-    return (1, -np.cos(point.coordinates[1]))
+    return (0.25, -np.cos(2 * point.coordinates[1]))
 
 
 # ----------------------------------- torus ---------------------------------- #

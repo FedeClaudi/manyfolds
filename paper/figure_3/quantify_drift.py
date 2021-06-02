@@ -19,9 +19,9 @@ plt.rc("font", family="serif")
 
 N = 64
 K = 12
-n_sec = 60
-NT = 32  # number of sample points per run
-nreps = 30
+n_sec = 300
+NT = 16  # number of sample points per run
+nreps = 30  # number of runs
 
 f, ax = plt.subplots(figsize=(16, 9))
 clean_axes(f)
@@ -29,7 +29,7 @@ clean_axes(f)
 
 # from manifold import vectors_fields
 MANIFOLDS = ("circle", "torus", "sphere")
-colors = "rgb"
+colors = ("#469BF0", "#264B71", "#0D0DF6")
 n_frames = int(n_sec * (1 / RNN.dt))
 
 for n, MANIFOLD in enumerate(MANIFOLDS):
@@ -85,6 +85,7 @@ for n, MANIFOLD in enumerate(MANIFOLDS):
 
     # ----------------------------------- plot ----------------------------------- #
     distances = np.mean(all_distances, 0)
+
     plot_mean_and_error(
         np.mean(distances, 1),
         np.std(distances, 1),
@@ -94,13 +95,17 @@ for n, MANIFOLD in enumerate(MANIFOLDS):
         lw=1,
     )
 
+
 ax.axhline(1, lw=3, ls="--", color=[0.6, 0.6, 0.6], zorder=-1)
+ax.axhline(1.05, lw=1, ls=":", color=[0.6, 0.6, 0.6], zorder=-1)
+ax.axhline(0.95, lw=1, ls=":", color=[0.6, 0.6, 0.6], zorder=-1)
+
 ax.set(
     ylabel="distance (norm)",
     xlabel="time (s)",
-    ylim=[0.8, 1.25],
-    xticks=np.arange(0, n_sec + 1, 10) * int(1 / rnn.dt),
-    xticklabels=np.arange(0, n_sec + 1, 10),
+    ylim=[0.90, 1.1],
+    xticks=np.arange(0, n_sec + 1, 30) * int(1 / rnn.dt),
+    xticklabels=np.arange(0, n_sec + 1, 30),
 )
 ax.legend()
 plt.show()

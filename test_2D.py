@@ -5,7 +5,7 @@ from manifold import vectors_fields
 from manifold import Visualizer
 
 K = 12
-MANIFOLD = "cylinder"
+MANIFOLD = "sphere"
 
 if MANIFOLD == "plane":
     M = Plane(embeddings.plane_to_r3, n_sample_points=[3, 2])
@@ -19,7 +19,7 @@ elif MANIFOLD == "torus":
 elif MANIFOLD == "sphere":
     M = Sphere(embeddings.sphere_to_r3, n_sample_points=[4, 10])
     x_range = [0.02, 0.02]
-    # M.vectors_field = vectors_fields.second_only
+    M.vectors_field = vectors_fields.second_only
 
 elif MANIFOLD == "cylinder":
     M = Cylinder(embeddings.cylinder_to_r3_as_cone, n_sample_points=[6, 2])
@@ -30,7 +30,7 @@ M.print_embedding_bounds()
 # create RNN
 rnn = RNN(M, n_units=3)
 rnn.build_W(k=K, scale=1)
-rnn.run_points(n_seconds=100)
+rnn.run_points(n_seconds=10)
 
 
 # visualize in embedding

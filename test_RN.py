@@ -7,7 +7,7 @@ from manifold import vectors_fields
 from manifold import Visualizer
 
 # --------------------------------- settings --------------------------------- #
-MANIFOLD = "torus"
+MANIFOLD = "circle"
 N = 64
 K = 14
 
@@ -45,11 +45,12 @@ elif MANIFOLD == "torus":
 
 
 elif MANIFOLD == "sphere":
+
     logger.debug("Sphere manifold")
     M = Sphere(embeddings.prepare_sphere_to_rn(n=N), n_sample_points=[4, 4])
     pca_sample_points = 75
 
-    M.vectors_field = vectors_fields.sphere_base
+    M.vectors_field = vectors_fields.second_only
 
     if K != 12:
         logger.warning("Sphere manifold prefers K = 12")

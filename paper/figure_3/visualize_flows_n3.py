@@ -7,11 +7,12 @@ from vedo import screenshot
 from manifold import embeddings, Circle, Visualizer, Torus, Sphere
 from manifold.rnn import RNN
 from manifold import vectors_fields
+from manifold import visualize
 
+visualize.reco_surface_radius = 0.3
+visualize.rnn_trace_radius = 0.02
 
-# from manifold import vectors_fields
-
-MANIFOLD = "sphere"
+MANIFOLD = "circle"
 K = 32
 
 if MANIFOLD == "circle":
@@ -29,12 +30,12 @@ elif MANIFOLD == "sphere":
 
 # create RNN
 rnn = RNN(M, n_units=3)
-rnn.build_W(k=K, scale=1)
-rnn.run_points(n_seconds=10)
+rnn.build_W(k=K, scale=3)
+rnn.run_points(n_seconds=85)
 
 # visualize in embedding
 viz = Visualizer(M, rnn, axes=0, manifold_alpha=0.5,)
-viz.show(x_range=0.07, scale=0.25)
+viz.show(x_range=0.07, scale=0.75)
 
 
 screenshot(f"./paper/figure_3/{M.name}_flows.png")

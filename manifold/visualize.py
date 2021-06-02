@@ -4,7 +4,6 @@ from loguru import logger
 from vedo import (
     Tube,
     recoSurface,
-    Line,
     Sphere,
     Plotter,
     Cylinder,
@@ -23,6 +22,14 @@ from manifold.tangent_vector import (
     get_basis_tangent_vector,
 )
 from manifold.maths import unit_vector
+
+# settings
+point_size = 0.05
+reco_surface_radius = 0.3
+rnn_trace_radius = 0.03
+tangent_vector_radius = 0.02
+manifold_1d_lw = 12
+manifold_1d_r = 0.015
 
 
 class Visualizer:
@@ -110,18 +117,16 @@ class Visualizer:
         else:
             coordinates = np.array(point.embedded)
 
-        mesh = Sphere(
-            coordinates,
-            r=0.1 if self.manifold.n == 3 else 0.05,
-            c=self.point_color,
-        )
+        mesh = Sphere(coordinates, r=point_size, c=self.point_color,)
         self.actors.append(mesh)
         self._add_silhouette(mesh)
 
     def _reconstruct_surface(self, coordinates):
         # plot points
         manifold = (
-            recoSurface(coordinates, dims=(50, 50, 50), radius=0.3)
+            recoSurface(
+                coordinates, dims=(50, 50, 50), radius=reco_surface_radius
+            )
             .c(self.manifold_color)
             .clean()
         )
@@ -137,14 +142,16 @@ class Visualizer:
         if self.manifold.n == 3:
             if self.manifold.d == 1:
                 manifold = Tube(
-                    self.manifold.embedded, r=0.02, c=self.manifold_color,
+                    self.manifold.embedded,
+                    r=manifold_1d_r,
+                    c=self.manifold_color,
                 )
                 self.actors.append(manifold)
             else:
                 if self.manifold.name in ("S^2", "Cy", "T^2"):
                     if self.manifold.name == "S^2":
                         # plot a sphere
-                        manifold = Sphere(r=0.98, c=self.manifold_color)
+                        manifold = Sphere(r=0.99, c=self.manifold_color)
 
                     elif self.manifold.name == "Cy":
                         # plot a cylinder
@@ -169,7 +176,7 @@ class Visualizer:
                     if self.wireframe:
                         manifold = manifold.wireframe().lw(1.5)
 
-                    self._add_silhouette(manifold)
+                    self._add_silhouette(manifold, lw=2)
                     self.actors.append(manifold)
 
                 else:
@@ -181,8 +188,8 @@ class Visualizer:
             if self.manifold.d > 1:
                 manifold = self._reconstruct_surface(self.embedded_lowd)
             else:
-                manifold = Line(
-                    self.embedded_lowd, c=self.manifold_color, lw=4
+                manifold = Tube(
+                    self.embedded_lowd, c=self.manifold_color, r=manifold_1d_r
                 )
                 self.actors.append(manifold)
 
@@ -230,10 +237,12 @@ class Visualizer:
                     )
                 else:
                     self._render_cylinder(
-                        [point_lowd, vec_lowd], green, r=0.02
+                        [point_lowd, vec_lowd], green, r=tangent_vector_radius
                     )
             else:
-                self._render_cylinder([point.embedded, vector], green, r=0.02)
+                self._render_cylinder(
+                    [point.embedded, vector], green, r=tangent_vector_radius
+                )
 
     def visualize_basis_vectors_at_point(
         self, point, color="k", r=0.03, scale=0.4
@@ -303,11 +312,7 @@ class Visualizer:
             else:
                 coordinates = trace.trace
             self.actors.append(
-                Tube(
-                    coordinates,
-                    c=salmon,
-                    r=0.02 if self.manifold.d == 1 else 0.025,
-                )
+                Tube(coordinates, c=salmon, r=rnn_trace_radius,)
             )
 
     def show(self, scale=1, x_range=0.05, rnn_inputs=None, **kwargs):
