@@ -22,7 +22,7 @@ elif MANIFOLD == "circle":
 # create RNN
 rnn = RNN(M, n_units=N)
 rnn.build_W(k=K)
-rnn.run_points(n_seconds=10)
+rnn.run_points(n_seconds=0.5)
 
 # visualize in embedding
 viz = Visualizer(M, rnn)

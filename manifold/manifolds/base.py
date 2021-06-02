@@ -53,6 +53,10 @@ class BaseManifold:
         """ short hand for self.manifold.M """
         return self.manifold.M
 
+    @property
+    def CoM(self):
+        return np.mean(self.embedded, axis=0)
+
     def print_embedding_bounds(self):
         """
             it prints the boundary values of the embedded manifold
@@ -72,8 +76,11 @@ class BaseManifold:
         # print(tb)
         logger.debug(
             f"Manifold bounds: low: {np.min(lows):.2f} | max: {np.max(highs):.2f}"
-            + f"Average bounds: {np.mean(lows):.2f} | {np.mean(highs):.2f}"
+            + f"   Average bounds: {np.mean(lows):.2f} | {np.mean(highs):.2f}"
         )
+
+        # get center of mass
+        logger.debug(f"Manifold CoM:\n{self.CoM}")
 
     def _fill_points_data(self, points):
         """
@@ -117,6 +124,10 @@ class BaseManifold:
         self.embedded = np.vstack(
             [p.coordinates for p in self.embedded_points_vis]
         )
+
+        # make sure that the manifold is centered at the origin
+        if np.any(self.CoM != 0):
+            self.embedded = self.embedded - self.CoM
 
     # ------------------------ to implement in subclasses ------------------------ #
     def project_with_charts(self, points=None):

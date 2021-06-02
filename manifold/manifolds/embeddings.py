@@ -168,7 +168,7 @@ def circle_to_rn(mtx, p):
         to Rn
     """
     circle_3d = circle_to_r3(p)
-    embedded = mtx @ np.array(circle_3d)
+    embedded = mtx @ np.array(circle_3d) * 2
     return tuple(embedded)
 
 
@@ -233,7 +233,7 @@ def sphere_to_rn(mtx, p):
         to Rn
     """
     sphere_3d = sphere_to_r3(p)
-    embedded = mtx @ np.array(sphere_3d)
+    embedded = mtx @ np.array(sphere_3d) * 2
     return tuple(embedded)
 
 
@@ -252,7 +252,7 @@ def plane_to_rn(mtx, p):
         to Rn
     """
     plane_3d = plane_to_r3(p)
-    embedded = mtx @ np.array(plane_3d)
+    embedded = mtx @ (np.array(plane_3d) * 2)
     return tuple(embedded)
 
 
@@ -286,7 +286,7 @@ def torus_to_rn(mtx, p):
         to Rn
     """
     torus_3d = torus_to_r3(p)
-    embedded = mtx @ np.array(torus_3d)
+    embedded = mtx @ np.array(torus_3d) * 2.5
     return tuple(embedded)
 
 
@@ -319,7 +319,7 @@ def cylinder_as_cone_to_rn(mtx, p):
         to Rn
     """
     cylinder_3d = cylinder_to_r3_as_cone(p)
-    embedded = mtx @ np.array(cylinder_3d)
+    embedded = mtx @ np.array(cylinder_3d) * 2
     return tuple(embedded)
 
 

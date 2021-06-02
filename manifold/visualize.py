@@ -112,7 +112,7 @@ class Visualizer:
 
         mesh = Sphere(
             coordinates,
-            r=0.05 if self.manifold.d > 1 else 0.05,
+            r=0.1 if self.manifold.n == 3 else 0.05,
             c=self.point_color,
         )
         self.actors.append(mesh)
@@ -168,6 +168,8 @@ class Visualizer:
 
                     if self.wireframe:
                         manifold = manifold.wireframe().lw(1.5)
+
+                    self._add_silhouette(manifold)
                     self.actors.append(manifold)
 
                 else:
@@ -304,7 +306,7 @@ class Visualizer:
                 Tube(
                     coordinates,
                     c=salmon,
-                    r=0.02 if self.manifold.d == 1 else 0.015,
+                    r=0.02 if self.manifold.d == 1 else 0.025,
                 )
             )
 

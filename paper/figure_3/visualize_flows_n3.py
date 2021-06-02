@@ -29,7 +29,7 @@ elif MANIFOLD == "sphere":
 
 # create RNN
 rnn = RNN(M, n_units=3)
-rnn.build_W(k=K, scale=100)
+rnn.build_W(k=K, scale=1)
 rnn.run_points(n_seconds=10)
 
 # visualize in embedding

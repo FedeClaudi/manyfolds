@@ -5,7 +5,7 @@ from manifold import vectors_fields
 from manifold import Visualizer
 
 K = 12
-MANIFOLD = "torus"
+MANIFOLD = "cylinder"
 
 if MANIFOLD == "plane":
     M = Plane(embeddings.plane_to_r3, n_sample_points=[3, 2])

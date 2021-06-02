@@ -7,9 +7,9 @@ from manifold import vectors_fields
 from manifold import Visualizer
 
 # --------------------------------- settings --------------------------------- #
-MANIFOLD = "sphere"
+MANIFOLD = "torus"
 N = 64
-K = 3
+K = 14
 
 # ---------------------------------------------------------------------------- #
 #                          select manifold parameters                          #
@@ -33,23 +33,26 @@ elif MANIFOLD == "helix":
 
 elif MANIFOLD == "circle":
     logger.debug("Circle manifold")
-    M = Circle(embeddings.prepare_circle_angled_to_rn(n=N), n_sample_points=24)
-    pca_sample_points = 100
-    M.vectors_field = vectors_fields.sin
+    M = Circle(embeddings.prepare_circle_to_rn(n=N), n_sample_points=6)
+    pca_sample_points = 50
+    # M.vectors_field = vectors_fields.double_sin
 
 elif MANIFOLD == "torus":
     logger.debug("Torus manifold")
-    M = Torus(embeddings.prepare_torus_to_rn(n=N), n_sample_points=[4, 4])
-    pca_sample_points = 100
-    M.vectors_field = vectors_fields.second_only
+    M = Torus(embeddings.prepare_torus_to_rn(n=N), n_sample_points=[8, 4])
+    pca_sample_points = 50
+    M.vectors_field = vectors_fields.torus_first
 
 
 elif MANIFOLD == "sphere":
     logger.debug("Sphere manifold")
     M = Sphere(embeddings.prepare_sphere_to_rn(n=N), n_sample_points=[4, 4])
-    pca_sample_points = 60
+    pca_sample_points = 75
 
     M.vectors_field = vectors_fields.sphere_base
+
+    if K != 12:
+        logger.warning("Sphere manifold prefers K = 12")
 
 elif MANIFOLD == "cylinder":
     logger.debug("Cylinder manifold")
@@ -58,7 +61,7 @@ elif MANIFOLD == "cylinder":
     )
     pca_sample_points = 60
 
-    M.vectors_field = vectors_fields.first_only
+    M.vectors_field = vectors_fields.second_only
 
 
 elif MANIFOLD == "cone":
@@ -68,12 +71,14 @@ elif MANIFOLD == "cone":
     )
     pca_sample_points = 60
 
-    M.vectors_field = vectors_fields.first_only
+    # M.vectors_field = vectors_fields.first_only
 
 elif MANIFOLD == "plane":
     logger.debug("Plane manifold")
     M = Plane(embeddings.prepare_plane_to_rn(n=N), n_sample_points=[2, 2])
-    pca_sample_points = 20
+    pca_sample_points = 80
+
+    M.vectors_field = vectors_fields.second_only
 
 else:
     raise NotImplementedError
@@ -87,7 +92,7 @@ M.print_embedding_bounds()
 # fit and run RNN
 rnn = RNN(M, n_units=N)
 rnn.build_W(k=K, scale=1)
-rnn.run_points(n_seconds=25, cut=True)
+rnn.run_points(n_seconds=60, cut=True)
 
 
 viz = Visualizer(M, rnn=rnn, pca_sample_points=pca_sample_points)

@@ -33,7 +33,7 @@ def sel_args(func):
 
 @sel_args
 def identity(point):
-    return tuple([1 for n in range(point.d)])
+    return tuple([0.2 for n in range(point.d)])
 
 
 @sel_args
@@ -126,7 +126,7 @@ def sphere_equator(point):
     """
     cos = np.cos(point.coordinates[0])
     cos2 = np.cos(2 * point.coordinates[0])
-    return (cos, (1 - cos2) * 0.8)
+    return (cos * 0.4, (1 - cos2) * 1)
 
 
 @sel_args
@@ -135,7 +135,7 @@ def sphere_poles(point):
     """
         Pushes the dynamics towards the poles of the sphere
     """
-    return (-np.cos(point.coordinates[0]), 0)
+    return (-np.cos(point.coordinates[0]) * 0.2, 0)
 
 
 @sel_args
@@ -144,7 +144,7 @@ def sphere_base(point):
     """
         Pushes the dynamics towards the poles of the sphere
     """
-    return (-np.cos(point.coordinates[0]), 1)
+    return (-np.cos(point.coordinates[0]), 0.5)
 
 
 @sel_args
@@ -159,22 +159,22 @@ def sphere_base2(point):
 # ----------------------------------- torus ---------------------------------- #
 @normalize
 def torus_base(point):
-    return (point.coordinates[0], np.sin(2 * point.coordinates[1]))
+    return (point[0], np.sin(2 * point[1]))
 
 
 def torus_first(point):
-    return (np.cos(point.coordinates[1]), 0)
+    return (np.cos(point[1]) * 2, 0)
 
 
 def torus_second(point):
-    return (0, np.cos(point.coordinates[0] * 2))
+    return (0, np.cos(point[0] * 2))
 
 
 # @sel_args
 # def torus_first(point):
-#     return (np.sin(2 * point.coordinates[0]), 0)
+#     return (np.sin(2 * point[0]), 0)
 
 
 # @sel_args
 # def torus_second(point):
-#     return (0, np.sin(2 * point.coordinates[1]))
+#     return (0, np.sin(2 * point[1]))

@@ -17,10 +17,11 @@ from manifold import vectors_fields
 plt.rc("text", usetex=True)
 plt.rc("font", family="serif")
 
-N = 3
-K = 6
+N = 64
+K = 12
 n_sec = 60
-NT = 32
+NT = 32  # number of sample points per run
+nreps = 30
 
 f, ax = plt.subplots(figsize=(16, 9))
 clean_axes(f)
@@ -60,11 +61,11 @@ for n, MANIFOLD in enumerate(MANIFOLDS):
         M.vectors_field = vectors_fields.second_only
 
     # create RNN
-    all_distances = np.zeros((5, n_frames, NT))
-    for rep in range(5):
+    all_distances = np.zeros((nreps, n_frames, NT))
+    for rep in range(nreps):
         logger.info(f"Rep: {rep}")
         rnn = RNN(M, n_units=N)
-        rnn.build_W(k=K, scale=100)
+        rnn.build_W(k=K)
         rnn.run_points(n_seconds=n_sec, cut=False)
 
         # compute distance from manifold
