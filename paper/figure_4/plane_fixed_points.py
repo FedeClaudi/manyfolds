@@ -2,7 +2,8 @@ import sys
 
 sys.path.append("./")
 import numpy as np
-from vedo import screenshot
+
+# from vedo import screenshot
 import matplotlib.pyplot as plt
 
 from myterial import amber_darker, pink_darker, salmon_darker
@@ -35,8 +36,8 @@ cam = dict(
 
 
 def vfield(p):
-    s1 = np.sin(2 * np.pi * p[0]) * 1
-    s2 = np.sin(2 * np.pi * p[1]) * 1
+    s1 = np.sin(2 * np.pi * p[0]) * 0.3
+    s2 = np.sin(2 * np.pi * p[1]) * 0.3
     return (-s1, -s2)
 
 
@@ -48,11 +49,11 @@ def vfield(p):
 
 
 def input_one_vfield(p):
-    return (2, 0)
+    return (7, 0)
 
 
 def input_two_vfield(p):
-    return (0, 2)
+    return (0, 7)
 
 
 def generate_trial():
@@ -62,7 +63,7 @@ def generate_trial():
     inputs = np.zeros((n_steps, 2))
     outputs = np.zeros_like(inputs)
 
-    for i in range(1):
+    for i in range(2):
         # ever n sec flip the inputs
         f = 0.1
         flips = np.random.uniform(1, n_steps - 1, int(f / RNN.dt)).astype(
@@ -109,7 +110,7 @@ viz = Visualizer(
     rnn=rnn,
     mark_rnn_endpoint=True,
     camera=cam,
-    pca_sample_points=128,
+    pca_sample_points=30,
 )
 
 # --------------------------------- run task --------------------------------- #
@@ -121,13 +122,12 @@ rnn.run_initial_condition(h, n_seconds=trial_n_sec, inputs=inputs, cut=False)
 
 # ------------------------------ visulize in 3D ------------------------------ #
 # show(tube, new=True)
-# viz.show(scale=0.2, show_rnn_inputs_vectors=True, show_tangents=False)
-screenshot(f"./paper/figure_4/{M.name}_inputs{SHOW_INPUTS}.png")
+viz.show(scale=0.2, show_rnn_inputs_vectors=True, show_tangents=False)
+# screenshot(f"./paper/figure_4/{M.name}_inputs{SHOW_INPUTS}.png")
 
 # ---------------------------- readout predictions --------------------------- #
-predictions = (
-    np.apply_along_axis(rnn.B.T.dot, 1, rnn.traces[-1].trace) / 2 - 0.5
-)
+predictions = np.apply_along_axis(rnn.B.T.dot, 1, rnn.traces[-1].trace) / 7
+predictions -= predictions[0]
 
 # TODO improve readout directions
 # TODO improve stability
@@ -150,5 +150,5 @@ for n, ax in enumerate(axes):
     )
 
     ax.legend()
-    # ax.set(ylim=[-.2, 1.2])
+    ax.set(ylim=[-2.2, 4.2])
 plt.show()
