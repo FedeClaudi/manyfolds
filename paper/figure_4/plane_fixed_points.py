@@ -122,7 +122,7 @@ rnn.run_initial_condition(h, n_seconds=trial_n_sec, inputs=inputs, cut=False)
 
 # ------------------------------ visulize in 3D ------------------------------ #
 # show(tube, new=True)
-viz.show(scale=0.2, show_rnn_inputs_vectors=True, show_tangents=False)
+# viz.show(scale=0.2, show_rnn_inputs_vectors=True, show_tangents=False)
 # screenshot(f"./paper/figure_4/{M.name}_inputs{SHOW_INPUTS}.png")
 
 # ---------------------------- readout predictions --------------------------- #
