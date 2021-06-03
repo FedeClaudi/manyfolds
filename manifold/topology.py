@@ -8,6 +8,8 @@ class Point:
     coordinates: tuple
     embedding_map: Callable
 
+    shift = 0
+
     def __getitem__(self, i):
         return self.coordinates[i]
 

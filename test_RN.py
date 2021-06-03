@@ -7,7 +7,7 @@ from manifold import vectors_fields
 from manifold import Visualizer
 
 # --------------------------------- settings --------------------------------- #
-MANIFOLD = "circle"
+MANIFOLD = "plane"
 N = 64
 K = 14
 
@@ -35,7 +35,7 @@ elif MANIFOLD == "circle":
     logger.debug("Circle manifold")
     M = Circle(embeddings.prepare_circle_angled_to_rn(n=N), n_sample_points=6)
     pca_sample_points = 50
-    M.vectors_field = vectors_fields.double_sin
+    # M.vectors_field = vectors_fields.double_sin
 
 elif MANIFOLD == "torus":
     logger.debug("Torus manifold")
@@ -79,7 +79,7 @@ elif MANIFOLD == "plane":
     M = Plane(embeddings.prepare_plane_to_rn(n=N), n_sample_points=[2, 2])
     pca_sample_points = 80
 
-    M.vectors_field = vectors_fields.second_only
+    # M.vectors_field = vectors_fields.second_only
 
 else:
     raise NotImplementedError

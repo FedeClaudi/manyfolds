@@ -106,17 +106,6 @@ class BaseFunction2D:
             ).sample(n=N)
         )
 
-        # ensure domain [0, 1]
-        # if np.any(domain < 0):
-        #     cut = np.where(domain < 0)[0][-1]
-        #     domain = domain[cut:]
-        #     self.embedded_point_index -= cut
-        #     N -= cut
-        # if np.any(domain > 1):
-        #     cut = np.where(domain > 0)[0][0]
-        #     domain = domain[:cut]
-        #     N = cut
-
         # get points in the embedding
         # 1. map the domain of f to the chart's local coordinates
         # keep one dimension fixed and vary the other
@@ -128,8 +117,9 @@ class BaseFunction2D:
         manifold_coords = self.point.chart.x.inverse(chart_coords)
 
         # 3. use the embedding map to the the coordinates in the embedding space
-        self.embedded = np.apply_along_axis(
-            self.point.embedding_map, 1, manifold_coords
+        self.embedded = (
+            np.apply_along_axis(self.point.embedding_map, 1, manifold_coords)
+            + self.point.shift
         )
 
     @property

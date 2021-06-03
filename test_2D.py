@@ -5,11 +5,13 @@ from manifold import vectors_fields
 from manifold import Visualizer
 
 K = 12
-MANIFOLD = "sphere"
+MANIFOLD = "plane"
 
 if MANIFOLD == "plane":
     M = Plane(embeddings.plane_to_r3, n_sample_points=[3, 2])
     x_range = [0.3, 0.3]
+
+    M.vectors_field = vectors_fields.second_only
 
 elif MANIFOLD == "torus":
     M = Torus(embeddings.torus_to_r3, n_sample_points=[8, 0])

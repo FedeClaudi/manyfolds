@@ -99,7 +99,7 @@ def plane_to_r3_flat(p0, p1):
 
 @parse2D
 def plane_to_r3(p0, p1):
-    return (p0, sin(p1), 0.6 * (p1 - p0) ** 2)
+    return (p0, sin(p1), 0.63 * (p1 - p0) ** 2)
 
 
 # ----------------------------------- torus ---------------------------------- #
@@ -250,7 +250,7 @@ def plane_to_rn(mtx, p):
         to Rn
     """
     plane_3d = plane_to_r3(p)
-    embedded = mtx @ (np.array(plane_3d) * 2)
+    embedded = mtx @ (np.array(plane_3d) * 2) * 2
     return tuple(embedded)
 
 
@@ -260,20 +260,21 @@ def prepare_plane_to_rn(n=64):
     return partial(plane_to_rn, mtx)
 
 
-def flat_plane_to_rn(mtx, p):
+def flat_plane_to_rn(v, m, p):
     """
         Embedd a plane by first embedding it in
         R3 and then using a linear transformatin
         to Rn
     """
-    plane_3d = plane_to_r3_flat(p)
-    embedded = mtx @ np.array(plane_3d)
+    embedded = ((v * (p[0] + 0.2) + m * (p[1] + 0.2)) + 0.4) * 2
     return tuple(embedded)
 
 
 def prepare_flat_plane_to_rn(n=64):
-    mtx = ortho_group.rvs(n)[:, :3]
-    return partial(flat_plane_to_rn, mtx)
+    x = ortho_normal_matrix(n, 2)
+    v = unit_vector(x[:, 0])
+    m = unit_vector(x[:, 1])
+    return partial(flat_plane_to_rn, v, m)
 
 
 # ----------------------------------- torus ---------------------------------- #

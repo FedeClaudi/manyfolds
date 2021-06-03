@@ -121,26 +121,26 @@ class Manifold2D(BaseManifold):
 class Plane(Manifold2D):
     name = "R^2"
     manifold = Manifold(
-        M=[Interval("M_1", 0, 1), Interval("M_2", 0, 1)],
+        M=[Interval("M_1", -0.1, 1.1), Interval("M_2", -0.1, 1.1)],
         charts=[
             Chart(
                 1,
-                [Interval("U_1_1", 0, 0.6), Interval("U_1_2", 0, 0.6)],
+                [Interval("U_1_1", -0.1, 0.6), Interval("U_1_2", -0.1, 0.6)],
                 Map("x_1", identity, identity),
             ),
             Chart(
                 2,
-                [Interval("U_2_1", 0.4, 1), Interval("U_2_2", 0, 0.6)],
+                [Interval("U_2_1", 0.4, 1.1), Interval("U_2_2", -0.1, 0.6)],
                 Map("x_2", identity, identity),
             ),
             Chart(
                 3,
-                [Interval("U_3_1", 0, 0.6), Interval("U_3_2", 0.4, 1)],
+                [Interval("U_3_1", -0.1, 0.6), Interval("U_3_2", 0.4, 1.1)],
                 Map("x_3", identity, identity),
             ),
             Chart(
                 4,
-                [Interval("U_4_1", 0.4, 1), Interval("U_4_2", 0.4, 1)],
+                [Interval("U_4_1", 0.4, 1.1), Interval("U_4_2", 0.4, 1.1)],
                 Map("x_4", identity, identity),
             ),
         ],

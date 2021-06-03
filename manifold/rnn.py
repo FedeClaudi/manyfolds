@@ -71,7 +71,6 @@ class RNN:
                 vector_fields: list. List of functions mapping points on the manifolds
                     to elements of the tangent vector spce at that point.
         """
-        raise NotImplementedError
         if vector_fields is not None:
             if (
                 isinstance(vector_fields, list)
@@ -85,8 +84,7 @@ class RNN:
 
         points = self.manifold.sample(n=k - 1, fill=True, full=True)
 
-        # standard basis of inputs vector space Rm
-
+        # standard basis of inputs vector space Rq
         basis = np.eye(self.n_inputs)
         inputs = []  # stroes inputs vectors
         tangents = []  # stores tangent vectors Bu
@@ -107,10 +105,10 @@ class RNN:
                 inputs.append(basis[:, idx])
 
         # solve for B
-        self.B = self._solve_eqs_sys(inputs, tangents)
+        self.B = self._solve_eqs_sys(tangents, inputs)
         logger.debug(f"RNN input matrix shape: {self.B.shape}")
         self.inputs_basis = [
-            InputsBase(n, basis[:, n], unit_vector(self.B.T.dot(basis[:, n])))
+            InputsBase(n, basis[:, n], unit_vector(self.B.dot(basis[:, n])))
             for n in range(self.n_inputs)
         ]
 
@@ -134,7 +132,7 @@ class RNN:
         if self.d == 2:
             # make sure not to oversample
             k = int(np.ceil(np.sqrt(k)))
-        points = self.manifold.sample(n=k - 1, fill=True, full=False)
+        points = self.manifold.sample(n=k - 1, fill=True, full=True)
         if len(points) != k and len(points) != k ** 2:
             raise ValueError(f"Got {len(points)} points with k={k}")
 
@@ -144,8 +142,6 @@ class RNN:
         for point in points:
             # get the network's h_dot as a sum of base function tangent vectors
             vec = get_tangent_vector(point, self.manifold.vectors_field)
-            # v.append(vec)
-            # s.append(self.sigma(point.embedded))
 
             # repeat but with noise shift
             embedded = point.embedded
@@ -166,12 +162,8 @@ class RNN:
         h = np.array(h)
         hdot = self.dynamics(h)
 
-        # if inputs is not None:
-        #     if self.B is None:
-        #         raise ValueError(
-        #             "In order to use inputs you need to build B matrix first"
-        #         )
-        #     hdot += self.B.T.dot(inputs)
+        if inputs is not None:
+            hdot += self.B.dot(inputs)
         return h + self.dt * hdot
 
     def run_initial_condition(self, h, n_seconds=10.0, inputs=None, cut=True):
@@ -179,12 +171,16 @@ class RNN:
         n_steps = int(n_seconds / self.dt)
 
         trace = np.zeros((n_steps, len(h)))
-        for n, step in enumerate(range(n_steps)):
-            h = self.step(h, inputs=inputs)
-            trace[n, :] = h
+        for step in range(n_steps):
+            if inputs is not None:
+                _step_inputs = inputs[step, :]
+            else:
+                _step_inputs = None
+            h = self.step(h, inputs=_step_inputs)
+            trace[step, :] = h
 
-            if np.linalg.norm(h) >= 5 and n > 1 and cut:
-                trace = trace[:n, :]
+            if np.linalg.norm(h) >= 5 and step > 1 and cut:
+                trace = trace[:step, :]
                 break  # too far from origin
 
         self.traces.append(Trace(trace[0, :], trace))

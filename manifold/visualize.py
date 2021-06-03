@@ -14,19 +14,21 @@ from myterial import (
     salmon,
     green,
     black,
-    deep_purple,
+    amber_dark,
+    pink_dark,
 )
 
 from manifold.tangent_vector import (
     get_tangent_vector,
     get_basis_tangent_vector,
 )
-from manifold.maths import unit_vector
+from manifold._visualize import make_palette
 
 # settings
 point_size = 0.05
 reco_surface_radius = 0.3
 rnn_trace_radius = 0.03
+rnn_inputs_radius = 0.02
 tangent_vector_radius = 0.02
 manifold_1d_lw = 12
 manifold_1d_r = 0.015
@@ -99,6 +101,9 @@ class Visualizer:
             n=self.pca_sample_points, full=True, fill=True
         )
         embedded = np.vstack([p.embedded for p in embedded_points_pca])
+
+        if self.manifold.shift_applied:
+            embedded += self.manifold.points_shift
 
         self.pca = PCA(n_components=3).fit(embedded)
         self.embedded_lowd = self.pca.transform(embedded)
@@ -269,41 +274,22 @@ class Visualizer:
         """
         if self.rnn.B is None:
             return
-        if self.manifold.n > 3:
-            raise NotImplementedError("Reduce dim on point and vec")
 
         # visualize inputs basis vector
-        # colors = make_palette(blue_light, indigo, self.rnn.n_inputs)
-        colors = ["r", "r", "r", "r", "g", "g", "g", "g"]
+        colors = make_palette(amber_dark, pink_dark, self.rnn.n_inputs)
         for base in self.rnn.inputs_basis:
             for point in self.manifold.points:
+                if self.manifold.n == 3:
+                    pt = point.embedded
+                    vec = point.embedded + base.projected * scale
+                else:
+                    pt = self.pca.transform(point.embedded.reshape(1, -1))[0]
+                    vec = point.embedded + base.projected * scale
+                    vec = self.pca.transform(vec.reshape(1, -1))[0]
                 self._render_cylinder(
-                    [
-                        point.embedded,
-                        point.embedded + base.projected * scale * 0.5,
-                    ],
-                    colors[base.idx],
-                    r=0.02,
+                    [pt, vec], colors[base.idx], r=rnn_inputs_radius,
                 )
-
-        if rnn_inputs is not None:
-            if len(rnn_inputs.shape) == 1:
-                rnn_inputs = rnn_inputs.reshae(1, -1)
-
-            for idx in np.arange(rnn_inputs.shape[0]):
-                try:
-                    vec = unit_vector(self.rnn.B.T @ rnn_inputs[idx])
-                except ValueError:
-                    raise ValueError(
-                        f"Failed to compute RNN input vec Bu - B shape: {self.rnn.B.shape} - u shape {rnn_inputs.shape}"
-                    )
-
-                for point in self.manifold.points:
-                    self._render_cylinder(
-                        [point.embedded, point.embedded + vec],
-                        deep_purple,
-                        r=0.02,
-                    )
+                break
 
     def visualize_rnn_traces(self):
         for trace in self.rnn.traces:
@@ -328,13 +314,27 @@ class Visualizer:
                 self._add_silhouette(point)
                 self.actors.append(point)
 
-    def show(self, scale=1, x_range=0.05, rnn_inputs=None, **kwargs):
-        self.visualize_manifold()
-        self.visualize_tangent_vectors(scale=scale, x_range=x_range)
+    def show(
+        self,
+        scale=1,
+        x_range=0.05,
+        rnn_inputs=None,
+        show_tangents=True,
+        show_rnn_inputs_vectors=True,
+        **kwargs,
+    ):
+        # self.visualize_manifold()
+        for point in self.manifold.points:
+            self._scatter_point(point)
+
+        if show_tangents:
+            self.visualize_tangent_vectors(scale=scale, x_range=x_range)
 
         if self.rnn is not None:
             self.visualize_rnn_traces()
-            self.visualize_rnn_inputs(scale=scale, rnn_inputs=rnn_inputs)
+
+            if show_rnn_inputs_vectors:
+                self.visualize_rnn_inputs(scale=scale, rnn_inputs=rnn_inputs)
 
         for actor in self.actors:
             actor.lighting("off")

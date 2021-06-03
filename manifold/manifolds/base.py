@@ -19,6 +19,9 @@ class BaseManifold:
     # maps to define vector fields on the manifold
     vectors_field = vectors_fields.identity
 
+    shift_applied = False
+    points_shift = None
+
     def __init__(self, embedding, n_sample_points=10):
         self.embedding = embedding
 
@@ -73,6 +76,7 @@ class BaseManifold:
             lows.append(low)
             highs.append(high)
             tb.add_row(str(dim), f"min: {low:.2f} | max: {high:.2f}")
+
         # print(tb)
         logger.debug(
             f"Manifold bounds: low: {np.min(lows):.2f} | max: {np.max(highs):.2f}"
@@ -126,8 +130,25 @@ class BaseManifold:
         )
 
         # make sure that the manifold is centered at the origin
-        if np.any(self.CoM != 0):
-            self.embedded = self.embedded - self.CoM
+        # if np.any(self.CoM != 0):
+        #     self.embedded = self.embedded - self.CoM
+
+    def shift_embedded_to_positive(self):
+        """
+            Makes sure that the embedded manifold is entirely in the 
+            positive range of each axis of the embedding space
+        """
+        self.shift_applied = True
+        shift = -self.points[0].embedded + 0.3
+        for point in self.points:
+            point.embedded += shift
+            point.shift = shift
+
+        # for point in self.embedded_points_vis:
+        #     point.embedded += shift
+
+        self.embedded += shift
+        self.points_shift = shift
 
     # ------------------------ to implement in subclasses ------------------------ #
     def project_with_charts(self, points=None):
