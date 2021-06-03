@@ -1,5 +1,4 @@
 import sys
-import numpy as np
 
 sys.path.append("./")
 
@@ -27,7 +26,7 @@ viz = Visualizer(
 viz.visualize_manifold()
 
 for point in viz.manifold.points:
-    pt = np.array(point.embedded)
+    pt = point.embedded
     for fn in point.base_functions:
         fn.embedd()
         vec = get_basis_tangent_vector(point, fn) * 0.25

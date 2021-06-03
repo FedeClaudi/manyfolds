@@ -148,7 +148,7 @@ class RNN:
             # s.append(self.sigma(point.embedded))
 
             # repeat but with noise shift
-            embedded = np.array(point.embedded)
+            embedded = point.embedded
             shift = np.random.randn(*embedded.shape) * 1e-6
             vec = vec - shift
 
@@ -159,16 +159,19 @@ class RNN:
         self.W = self._solve_eqs_sys(v, s) * self.dt * scale
         logger.debug(f"RNN connection matrix shape: {self.W.shape}")
 
+    def dynamics(self, h):
+        return self.W @ self.sigma(h)
+
     def step(self, h, inputs=None):
         h = np.array(h)
-        hdot = self.W.dot(self.sigma(h))
+        hdot = self.dynamics(h)
 
-        if inputs is not None:
-            if self.B is None:
-                raise ValueError(
-                    "In order to use inputs you need to build B matrix first"
-                )
-            hdot += self.B.T.dot(inputs)
+        # if inputs is not None:
+        #     if self.B is None:
+        #         raise ValueError(
+        #             "In order to use inputs you need to build B matrix first"
+        #         )
+        #     hdot += self.B.T.dot(inputs)
         return h + self.dt * hdot
 
     def run_initial_condition(self, h, n_seconds=10.0, inputs=None, cut=True):
@@ -196,8 +199,5 @@ class RNN:
             points, description="Running initial conditions..."
         ):
             self.run_initial_condition(
-                np.array(point.embedded),
-                n_seconds=n_seconds,
-                inputs=None,
-                cut=cut,
+                point.embedded, n_seconds=n_seconds, inputs=None, cut=cut,
             )

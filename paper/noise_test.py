@@ -4,7 +4,7 @@ sys.path.append("./")
 
 import numpy as np
 
-from manifold import embeddings, Circle
+from manifold import embeddings, Sphere
 from manifold.rnn import RNN
 
 from manifold import vectors_fields
@@ -17,8 +17,10 @@ visualize.rnn_trace_radius = 0.01
 N = 64
 K = 12
 
-M = Circle(embeddings.prepare_circle_angled_to_rn(n=N), n_sample_points=5)
-M.vectors_field = vectors_fields.small_identity
+# M = Circle(embeddings.prepare_circle_angled_to_rn(n=N), n_sample_points=5)
+# M.vectors_field = vectors_fields.small_identity
+M = Sphere(embeddings.prepare_sphere_to_rn(n=N), n_sample_points=[5, 0])
+M.vectors_field = vectors_fields.sphere_base
 pca_sample_points = 50
 
 
@@ -34,7 +36,7 @@ points = []
 for i in range(10):
     pt = point.clone()
     pt.embedded = np.array(pt.embedded)
-    pt.embedded += np.random.randn(*pt.embedded.shape) * 1e-1
+    pt.embedded += np.random.randn(*pt.embedded.shape) * 1e-2
     points.append(pt)
 M.points = points
 

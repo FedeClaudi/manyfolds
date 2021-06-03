@@ -1,7 +1,6 @@
 import sys
 
 sys.path.append("./")
-import numpy as np
 from vedo import settings, screenshot
 
 from manifold import embeddings, Sphere
@@ -36,7 +35,7 @@ viz.visualize_manifold()
 viz.visualize_tangent_vectors(scale=0.15, x_range=0.1)
 
 for point in viz.manifold.points:
-    pt = np.array(point.embedded)
+    pt = point.embedded
     for fn in point.base_functions:
         fn.embedd()
         vec = get_basis_tangent_vector(point, fn) * 0.1

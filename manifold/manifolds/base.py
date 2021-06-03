@@ -89,7 +89,7 @@ class BaseManifold:
         """
         # embedd:
         for point in points:
-            point.embedded = self.embedding(point)
+            point.embedded = np.array(self.embedding(point))
 
         # get base functions
         self.project_with_charts(points)
@@ -114,7 +114,7 @@ class BaseManifold:
         """
         # map each sampled point to the embedding
         for point in self.points:
-            point.embedded = self.embedding(point)
+            point.embedded = np.array(self.embedding(point))
 
         # get more points for visualization
         self.embedded_points_vis = [

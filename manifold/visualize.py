@@ -113,11 +113,9 @@ class Visualizer:
 
     def _scatter_point(self, point):
         if self.manifold.n > 3:
-            coordinates = self.pca.transform(
-                np.array(point.embedded).reshape(1, -1)
-            )[0]
+            coordinates = self.pca.transform(point.embedded.reshape(1, -1))[0]
         else:
-            coordinates = np.array(point.embedded)
+            coordinates = point.embedded
 
         mesh = Sphere(coordinates, r=point_size, c=self.point_color,)
         self.actors.append(mesh)
@@ -220,14 +218,18 @@ class Visualizer:
                 # self._add_silhouette(mesh, lw=100)
 
             # get tangent vector as sum of basis
-            vector = get_tangent_vector(
-                point, self.manifold.vectors_field, debug=False
-            ) * scale + np.array(point.embedded)
+            vector = (
+                get_tangent_vector(
+                    point, self.manifold.vectors_field, debug=False
+                )
+                * scale
+                + point.embedded
+            )
 
             # apply PCA and render
             if self.manifold.n > 3:
                 point_lowd = self.pca.transform(
-                    np.array(point.embedded).reshape(1, -1)
+                    point.embedded.reshape(1, -1)
                 ).ravel()
                 try:
                     vec_lowd = self.pca.transform(
@@ -249,12 +251,12 @@ class Visualizer:
     def visualize_basis_vectors_at_point(
         self, point, color="k", r=0.03, scale=0.4
     ):
-        pt = np.array(point.embedded)
+        pt = point.embedded
         for fn in point.base_functions:
             fn.embedd()
             vec = get_basis_tangent_vector(point, fn) * scale
             if self.manifold.n > 3:
-                pt = np.array(point.embedded)
+                pt = point.embedded
                 vec = self.pca.transform((pt + vec).reshape(1, -1))[0]
                 pt = self.pca.transform((pt).reshape(1, -1))[0]
             else:
