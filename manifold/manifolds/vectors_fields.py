@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import pi
 
 """
     Maps:
@@ -68,7 +69,7 @@ def random(point):
 
 @sel_args
 def sin(point):
-    return (np.sin(point[0] * 2),)
+    return (np.sin(point[0] * 2 * pi),)
 
 
 @sel_args
@@ -79,6 +80,11 @@ def cos(point):
 @sel_args
 def double_sin(point):
     return (np.sin(point[0] * 4),)
+
+
+@sel_args
+def double_cos(point):
+    return (np.cos(point[0] * 4),)
 
 
 @sel_args
@@ -188,3 +194,7 @@ def torus_second(point):
 # @sel_args
 # def torus_second(point):
 #     return (0, np.sin(2 * point[1]))
+
+# --------------------------------- cylinder --------------------------------- #
+def cylinder_vfield(point):
+    return (np.sin(point[1] * pi * 0.5) + 0.1, 0)

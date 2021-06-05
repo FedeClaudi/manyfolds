@@ -145,7 +145,7 @@ class Plane(Manifold2D):
             ),
         ],
     )
-
+    _center_embedding = False
     vis_n_points = [30, 30]
 
     def __init__(self, embedding, n_sample_points=10):
@@ -184,38 +184,20 @@ class Cylinder(Manifold2D):
         charts=[
             Chart(
                 1,
-                [Interval("U_1_1", 0, 1.5 * pi), Interval("U_1_2", 0, 0.7)],
-                Map("x_1", identity, identity),
+                [Interval("U_1_1", 0, pi), Interval("U_1_2", 0, 1)],
+                Map("x_1", maps.cylinder_U_1, maps.cylinder_U_1_inverse),
             ),
             Chart(
                 2,
-                [
-                    Interval("U_3_1", 0.5 * pi, 2 * pi),
-                    Interval("U_3_2", 0, 0.7),
-                ],
-                Map("x_2", identity, identity),
-            ),
-            Chart(
-                3,
-                [Interval("U_2_1", 0, 1.5 * pi), Interval("U_2_2", 0.3, 1)],
-                Map("x_3", identity, identity),
-            ),
-            Chart(
-                4,
-                [
-                    Interval("U_4_1", 0.5 * pi, 2 * pi),
-                    Interval("U_4_2", 0.3, 1),
-                ],
-                Map("x_4", identity, identity),
+                [Interval("U_2_1", pi, 2 * pi), Interval("U_2_2", 0, 1)],
+                Map("x_2", maps.cylinder_U_2, maps.cylinder_U_2_inverse),
             ),
         ],
     )
 
     vis_n_points = [20, 5]
-    base_functions_map = [
-        Map("id", maps.smul_pi, maps.smul_pi_inverse),
-        Map("id", identity, identity),
-    ]
+    _center_embedding = True
+    _full = True
 
     def __init__(self, embedding, n_sample_points=10):
         super().__init__(embedding, n_sample_points=n_sample_points)

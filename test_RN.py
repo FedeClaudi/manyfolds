@@ -7,9 +7,9 @@ from manifold import vectors_fields
 from manifold import Visualizer
 
 # --------------------------------- settings --------------------------------- #
-MANIFOLD = "plane"
+MANIFOLD = "cylinder"
 N = 64
-K = 14
+K = 6
 
 # ---------------------------------------------------------------------------- #
 #                          select manifold parameters                          #
@@ -62,7 +62,7 @@ elif MANIFOLD == "cylinder":
     )
     pca_sample_points = 60
 
-    M.vectors_field = vectors_fields.second_only
+    M.vectors_field = vectors_fields.cylinder_vfield
 
 
 elif MANIFOLD == "cone":
@@ -72,7 +72,7 @@ elif MANIFOLD == "cone":
     )
     pca_sample_points = 60
 
-    # M.vectors_field = vectors_fields.first_only
+    M.vectors_field = vectors_fields.first_only
 
 elif MANIFOLD == "plane":
     logger.debug("Plane manifold")

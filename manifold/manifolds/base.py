@@ -22,6 +22,9 @@ class BaseManifold:
     shift_applied = False
     points_shift = None
 
+    _full = True
+    _center_embedding = True
+
     def __init__(self, embedding, n_sample_points=10):
         self.embedding = embedding
 
@@ -130,8 +133,8 @@ class BaseManifold:
         )
 
         # make sure that the manifold is centered at the origin
-        # if np.any(self.CoM != 0):
-        #     self.embedded = self.embedded - self.CoM
+        if np.any(self.CoM != 0) and self._center_embedding:
+            self.embedded = self.embedded - self.CoM
 
     def shift_embedded_to_positive(self):
         """

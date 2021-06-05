@@ -132,7 +132,9 @@ class RNN:
         if self.d == 2:
             # make sure not to oversample
             k = int(np.ceil(np.sqrt(k)))
-        points = self.manifold.sample(n=k - 1, fill=True, full=True)
+        points = self.manifold.sample(
+            n=k - 1, fill=True, full=self.manifold._full
+        )
         if len(points) != k and len(points) != k ** 2:
             raise ValueError(f"Got {len(points)} points with k={k}")
 
@@ -142,14 +144,8 @@ class RNN:
         for point in points:
             # get the network's h_dot as a sum of base function tangent vectors
             vec = get_tangent_vector(point, self.manifold.vectors_field)
-
-            # repeat but with noise shift
-            embedded = point.embedded
-            shift = np.random.randn(*embedded.shape) * 1e-6
-            vec = vec - shift
-
             v.append(vec)
-            s.append(self.sigma(embedded + shift))
+            s.append(self.sigma(point.embedded))
 
         # get W
         self.W = self._solve_eqs_sys(v, s) * self.dt * scale
@@ -166,7 +162,9 @@ class RNN:
             hdot += self.B.dot(inputs)
         return h + self.dt * hdot
 
-    def run_initial_condition(self, h, n_seconds=10.0, inputs=None, cut=True):
+    def run_initial_condition(
+        self, h, n_seconds=10.0, inputs=None, cut=True, cut_th=5
+    ):
         trace = [h]
         n_steps = int(n_seconds / self.dt)
 
@@ -179,7 +177,7 @@ class RNN:
             h = self.step(h, inputs=_step_inputs)
             trace[step, :] = h
 
-            if np.linalg.norm(h) >= 5 and step > 1 and cut:
+            if np.linalg.norm(h) >= cut_th and step > 1 and cut:
                 trace = trace[:step, :]
                 break  # too far from origin
 

@@ -4,7 +4,7 @@ from scipy.stats import ortho_group
 from functools import partial
 
 from manifold.topology import Point
-from manifold.maths import ortho_normal_matrix, unit_vector, gram_schmidt
+from manifold.maths import ortho_normal_matrix, unit_vector
 
 # --------------------------------- wrappers --------------------------------- #
 
@@ -82,7 +82,8 @@ def circle_to_r3_angled(p):
 
 @parse
 def circle_to_r3(p):
-    return (sin(p), 0.8 * cos(p), cos(p * 2) ** 2 * 0.5 + 0.5)
+    # return (sin(p), 0.8 * cos(p), cos(p * 2) ** 2 * 0.5 + 0.5)
+    return (sin(p), 0.8 * cos(p), cos(p) ** 2 * 0.5 + 0.5)
 
 
 # ---------------------------------- sphere ---------------------------------- #
@@ -99,7 +100,7 @@ def plane_to_r3_flat(p0, p1):
 
 @parse2D
 def plane_to_r3(p0, p1):
-    return (p0, sin(p1), 0.63 * (p1 - p0) ** 2)
+    return (p0, sin(p1) * 0.5, 0.63 * (p1 - p0) ** 2)
 
 
 # ----------------------------------- torus ---------------------------------- #
@@ -185,14 +186,14 @@ def circle_to_rn_angled(v, m, p):
     """
     # define points on the circle of radius 1: 𝑟(cos𝑡)𝐯1+𝑟(sin𝑡)𝐯
     coords = cos(p) * v + sin(p) * m
-    coords *= 2
+    # coords *= 3
 
     return tuple(coords)
 
 
 def prepare_circle_angled_to_rn(n=64):
-    # x = ortho_normal_matrix(n, 2)
-    x = gram_schmidt(np.random.randn(n, 2)) * 12
+    x = ortho_normal_matrix(n, 2)
+    # x = gram_schmidt(np.random.randn(n, 2))
     v = unit_vector(x[:, 0])
     m = unit_vector(x[:, 1])
 
@@ -318,10 +319,10 @@ def cylinder_as_cone_to_rn(mtx, p):
         to Rn
     """
     cylinder_3d = cylinder_to_r3_as_cone(p)
-    embedded = mtx @ np.array(cylinder_3d) * 2
+    embedded = mtx @ np.array(cylinder_3d)
     return tuple(embedded)
 
 
 def prepare_cylinder_as_cone_to_rn(n=64):
-    mtx = ortho_normal_matrix(n, 3)
+    mtx = ortho_group.rvs(n)[:, :3]
     return partial(cylinder_as_cone_to_rn, mtx)

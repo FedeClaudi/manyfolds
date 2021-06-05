@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import pi
 
-from manifold import embeddings, Circle, Visualizer, Sphere
+from manifold import embeddings, Circle, Visualizer, Sphere, Line
 from manifold.rnn import RNN
 from manifold import vectors_fields
 
@@ -9,24 +9,29 @@ from functools import partial
 
 
 K = 24
-n_inputs = 8
-MANIFOLD = "circle"
+n_inputs = 4
+MANIFOLD = "line"
 
 if MANIFOLD == "circle":
     M = Circle(embeddings.circle_to_r3_flat, n_sample_points=5)
 elif MANIFOLD == "sphere":
     M = Sphere(embeddings.sphere_to_r3, n_sample_points=[4, 3])
+elif MANIFOLD == "line":
+    M = Line(embeddings.line_to_r3, n_sample_points=3)
 
 # define vector field
 M.vectors_field = vectors_fields.small
 
 
-
 def vfield(sign, shift, point):
     val = np.sin(point[0] + shift) * sign
-    return (val, )
+    return (val,)
 
-shifts = [0, pi*.25, pi*5, pi*.75]
+
+shifts = [
+    0,
+    pi * 5,
+]
 vfields_pos, vfields_neg = [], []
 for shift in shifts:
     vfields_pos.append(partial(vfield, 1, shift))
@@ -49,7 +54,7 @@ rnn.run_points(n_seconds=0.5, inputs=None)
 
 # visualize
 viz = Visualizer(M, rnn)
-viz.show(x_range=0.07, scale=1, rnn_inputs=None)
+viz.show(x_range=0.07, scale=0.2, rnn_inputs=None)
 
 
 # TODO we are finding nice bases for input vectors and B looks good

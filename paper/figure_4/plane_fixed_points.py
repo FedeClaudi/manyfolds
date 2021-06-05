@@ -6,13 +6,18 @@ import numpy as np
 # from vedo import screenshot
 import matplotlib.pyplot as plt
 
-from myterial import amber_darker, pink_darker, salmon_darker
+from myterial import amber_darker, pink_darker, salmon_dark
+from fcutils.plot.figure import clean_axes
 
 from manifold import embeddings, Plane
 from manifold.rnn import RNN
 
 from manifold import Visualizer
 from manifold import visualize
+
+plt.rc("text", usetex=True)
+plt.rc("font", family="serif")
+
 
 visualize.point_size = 0.03
 visualize.reco_surface_radius = 0.0
@@ -23,7 +28,8 @@ visualize.rnn_inputs_radius = 0.01
 N = 128
 K = 64
 n_inputs = 2
-trial_n_sec = 300
+trial_n_sec = 120
+inputs_scale = 18
 SHOW_INPUTS = True
 
 cam = dict(
@@ -36,24 +42,18 @@ cam = dict(
 
 
 def vfield(p):
-    s1 = np.sin(2 * np.pi * p[0]) * 0.3
-    s2 = np.sin(2 * np.pi * p[1]) * 0.3
+    scale = 2
+    s1 = np.sin(2 * np.pi * p[0]) * scale
+    s2 = np.sin(2 * np.pi * p[1]) * scale
     return (-s1, -s2)
 
 
-# def vfield(p):
-#     # s1 = np.sin(np.pi * p[0]) * .8
-#     s1 = np.tanh(p[0]) - np.tanh(1 - p[0])
-#     s2 = np.tanh(p[1]) - np.tanh(1 - p[1])
-#     return (-s1, -s2)
-
-
 def input_one_vfield(p):
-    return (7, 0)
+    return (np.sin(p[0] * np.pi) * inputs_scale, 0)
 
 
 def input_two_vfield(p):
-    return (0, 7)
+    return (0, np.sin(p[1] * np.pi) * inputs_scale)
 
 
 def generate_trial():
@@ -76,6 +76,7 @@ def generate_trial():
         for shift in (0, 1, 2, 3):
             inputs[flips + shift, i] = 1
             inputs[flips2 + shift, i] = -1
+        inputs[1] = 1
 
         # store the state
         state = 0
@@ -118,23 +119,24 @@ inputs, outputs = generate_trial()
 
 # evolve RNN dynamics with inputs
 h = M.points[41].embedded
-rnn.run_initial_condition(h, n_seconds=trial_n_sec, inputs=inputs, cut=False)
+rnn.run_initial_condition(
+    h, n_seconds=trial_n_sec, inputs=inputs, cut=True, cut_th=20
+)
 
 # ------------------------------ visulize in 3D ------------------------------ #
 # show(tube, new=True)
-# viz.show(scale=0.2, show_rnn_inputs_vectors=True, show_tangents=False)
+viz.show(scale=0.1, show_rnn_inputs_vectors=True, show_tangents=True)
 # screenshot(f"./paper/figure_4/{M.name}_inputs{SHOW_INPUTS}.png")
 
 # ---------------------------- readout predictions --------------------------- #
-predictions = np.apply_along_axis(rnn.B.T.dot, 1, rnn.traces[-1].trace) / 7
+predictions = np.apply_along_axis(rnn.B.T.dot, 1, rnn.traces[-1].trace) / 6
 predictions -= predictions[0]
-
-# TODO improve readout directions
-# TODO improve stability
 
 # ----------------------------- plot task results ---------------------------- #
 f, axes = plt.subplots(nrows=2, sharex=True, sharey=True, figsize=(9, 9))
+clean_axes(f)
 colors = (amber_darker, pink_darker)
+fps = int(1 / RNN.dt)
 for n, ax in enumerate(axes):
     ax.plot(
         outputs[:, n],
@@ -146,9 +148,16 @@ for n, ax in enumerate(axes):
 
     ax.plot(inputs[:, n], lw=2, color=colors[n], label=f"input {n}")
     ax.plot(
-        predictions[:, n], lw=3, color=salmon_darker, label=f"prediction {n}"
+        predictions[:, n], lw=3, color=salmon_dark, label=f"prediction {n}"
     )
 
     ax.legend()
-    ax.set(ylim=[-2.2, 4.2])
+    ax.set(
+        ylim=[-2.2, 2.2],
+        yticks=[-1, 0, 1],
+        xticks=np.arange(0, (trial_n_sec + 1) * fps, 15 * fps),
+        xticklabels=np.arange(0, (trial_n_sec + 1), 15),
+    )
+
 plt.show()
+# f.savefig(f"paper/figure_4/task.svg", format="svg")

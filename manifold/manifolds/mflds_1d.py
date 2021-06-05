@@ -10,6 +10,8 @@ from manifold.maps import (
     subtract_pi_inverse,
     smul_2,
     smul_2_inverse,
+    smul_pi,
+    smul_pi_inverse,
 )
 from manifold.base_function import BaseFunction
 from manifold.manifolds.base import BaseManifold
@@ -103,8 +105,10 @@ class Circle(Manifold1D):
             ),
         ],
     )
-
-    base_functions_map = Map("pi scalar multiplication", identity, identity)
+    _full = False
+    base_functions_map = Map(
+        "pi scalar multiplication", smul_pi, smul_pi_inverse
+    )
 
     def __init__(self, embedding, n_sample_points=10):
         super().__init__(embedding, n_sample_points=n_sample_points)

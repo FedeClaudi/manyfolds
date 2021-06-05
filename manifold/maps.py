@@ -101,7 +101,7 @@ def smul_2pi_inverse(*args):
     return scalar_multiplication(1 / (2 * pi), *args)
 
 
-# ---------------------------------- custom ---------------------------------- #
+# ---------------------------------- sphere ---------------------------------- #
 @return_many
 def sphere_U_2(x):
     x0 = x[0] / pi
@@ -118,6 +118,7 @@ def sphere_U_2_inverse(x):
     return x
 
 
+# ----------------------------------- torus ---------------------------------- #
 @return_many
 def torus_U_2(x):
     x0 = (x[0] - pi) / pi
@@ -147,4 +148,31 @@ def torus_U_4_inverse(x):
     x[:, 0] = x[:, 0] * pi + pi
     x[:, 1] = x[:, 1] * pi + pi
 
+    return x
+
+
+# --------------------------------- cylinder --------------------------------- #
+@return_many
+def cylinder_U_1(x):
+    x1 = x[1]
+    x0 = x[0] / pi
+    return tuple([x0, x1])
+
+
+@return_many
+def cylinder_U_1_inverse(x):
+    x[:, 0] = x[:, 0] * pi
+    return x
+
+
+@return_many
+def cylinder_U_2(x):
+    x1 = x[1]
+    x0 = (x[0] - pi) / pi
+    return tuple([x0, x1])
+
+
+@return_many
+def cylinder_U_2_inverse(x):
+    x[:, 0] = pi * x[:, 0] + pi
     return x

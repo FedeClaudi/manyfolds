@@ -289,7 +289,7 @@ class Visualizer:
                 self._render_cylinder(
                     [pt, vec], colors[base.idx], r=rnn_inputs_radius,
                 )
-                break
+                # break
 
     def visualize_rnn_traces(self):
         for trace in self.rnn.traces:
@@ -321,11 +321,14 @@ class Visualizer:
         rnn_inputs=None,
         show_tangents=True,
         show_rnn_inputs_vectors=True,
+        show_manifold=True,
         **kwargs,
     ):
-        # self.visualize_manifold()
-        for point in self.manifold.points:
-            self._scatter_point(point)
+        if show_manifold:
+            self.visualize_manifold()
+        else:
+            for point in self.manifold.points:
+                self._scatter_point(point)
 
         if show_tangents:
             self.visualize_tangent_vectors(scale=scale, x_range=x_range)
