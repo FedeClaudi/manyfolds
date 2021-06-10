@@ -120,10 +120,7 @@ class Line(Manifold1D):
         M=Interval("M", 0, 1),
         charts=[
             Chart(
-                1, Interval("U_1", 0, 0.5), Map("x_1", smul_2, smul_2_inverse),
-            ),
-            Chart(
-                2, Interval("U_2", 0.5, 1), Map("x_2", smul_2_inverse, smul_2),
+                1, Interval("U_1", 0, 1), Map("x_1", smul_2, smul_2_inverse),
             ),
         ],
     )

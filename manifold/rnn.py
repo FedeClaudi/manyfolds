@@ -1,9 +1,7 @@
-import autograd.numpy as np
+import numpy as np
 from loguru import logger
 from dataclasses import dataclass
 from rich.progress import track
-from autograd import elementwise_grad as egrad
-
 
 from manifold.maths import unit_vector
 from manifold.tangent_vector import get_tangent_vector
@@ -35,7 +33,7 @@ class RNN:
     traces = []  # stores results of runnning RNN on initial conditions
     B = None  # place holder for connections matrix
 
-    def __init__(self, manifold, n_units=3, n_inputs=None):
+    def __init__(self, manifold=None, n_units=3, n_inputs=None):
         """
             Constructs an RNN objects with the connectivity matrix matching 
             a target manifold.
@@ -47,10 +45,10 @@ class RNN:
         self.n_inputs = n_inputs
 
         self.sigma = np.tanh
-        self.sigma_gradient = egrad(self.sigma)
 
-        self.d = self.manifold.d
-        self.n = self.manifold.n
+        if manifold is not None:
+            self.d = self.manifold.d
+            self.n = self.manifold.n
 
     @staticmethod
     def _solve_eqs_sys(Xs, Ys):

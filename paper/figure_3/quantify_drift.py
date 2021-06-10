@@ -38,26 +38,20 @@ for n, MANIFOLD in enumerate(MANIFOLDS):
         if N == 3:
             M = Circle(embeddings.circle_to_r3_flat, n_sample_points=NT)
         else:
-            M = Circle(
-                embeddings.prepare_circle_angled_to_rn(n=N), n_sample_points=NT
-            )
+            M = Circle(embeddings.circle_to_rn, n_sample_points=NT)
 
     elif MANIFOLD == "torus":
         if N == 3:
             M = Torus(embeddings.torus_to_r3, n_sample_points=[NT, 0])
         else:
-            M = Torus(
-                embeddings.prepare_torus_to_rn(n=N), n_sample_points=[NT, 0]
-            )
+            M = Torus(embeddings.torus_to_rn, n_sample_points=[NT, 0])
         M.vectors_field = vectors_fields.second_only
 
     elif MANIFOLD == "sphere":
         if N == 3:
             M = Sphere(embeddings.sphere_to_r3, n_sample_points=[NT, 0])
         else:
-            M = Sphere(
-                embeddings.prepare_sphere_to_rn(n=N), n_sample_points=[NT, 0]
-            )
+            M = Sphere(embeddings.sphere_to_rn, n_sample_points=[NT, 0])
         M.vectors_field = vectors_fields.second_only
 
     # create RNN

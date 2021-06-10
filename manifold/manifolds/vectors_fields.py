@@ -126,7 +126,6 @@ def scale_second(point, fact=10):
 
 
 @sel_args
-@normalize
 def sin_on_sphere(point):
     return (np.sin(2 * point[0]), 0)
 
@@ -142,20 +141,18 @@ def sphere_equator(point):
     """
     cos = np.cos(point.coordinates[0])
     cos2 = np.cos(2 * point.coordinates[0])
-    return (cos * 0.8, (1 - cos2) * 1)
+    return (cos * 0.8, (1 - cos2) * 0.4)
 
 
 @sel_args
-@normalize
 def sphere_poles(point):
     """
         Pushes the dynamics towards the poles of the sphere
     """
-    return (-np.cos(point.coordinates[0]) * 0.2, 0)
+    return (-np.cos(point.coordinates[0]) * 0.8, 0)
 
 
 @sel_args
-@normalize
 def sphere_base(point):
     """
         Pushes the dynamics towards the poles of the sphere
@@ -164,7 +161,6 @@ def sphere_base(point):
 
 
 @sel_args
-@normalize
 def sphere_base2(point):
     """
         Pushes the dynamics towards the poles of the sphere
@@ -173,7 +169,6 @@ def sphere_base2(point):
 
 
 # ----------------------------------- torus ---------------------------------- #
-@normalize
 def torus_base(point):
     return (point[0], np.sin(2 * point[1]))
 

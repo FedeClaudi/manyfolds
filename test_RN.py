@@ -7,9 +7,9 @@ from manifold import vectors_fields
 from manifold import Visualizer
 
 # --------------------------------- settings --------------------------------- #
-MANIFOLD = "cylinder"
+MANIFOLD = "plane"
 N = 64
-K = 6
+K = 10
 
 # ---------------------------------------------------------------------------- #
 #                          select manifold parameters                          #
@@ -17,7 +17,7 @@ K = 6
 # get manifold
 if MANIFOLD == "line":
     logger.debug("Line manifold")
-    M = Line(embeddings.prepare_line_to_rn(n=N), n_sample_points=1)
+    M = Line(embeddings.line_to_rn, n_sample_points=1)
     pca_sample_points = 50
 
     if K > 6:
@@ -25,7 +25,7 @@ if MANIFOLD == "line":
 
 elif MANIFOLD == "helix":
     logger.debug("helix manifold")
-    M = Line(embeddings.prepare_helix_to_rn(n=N), n_sample_points=4)
+    M = Line(embeddings.helix_to_rn, n_sample_points=4)
     pca_sample_points = 150
 
     if K > 12 or K < 8:
@@ -33,24 +33,24 @@ elif MANIFOLD == "helix":
 
 elif MANIFOLD == "circle":
     logger.debug("Circle manifold")
-    M = Circle(embeddings.prepare_circle_angled_to_rn(n=N), n_sample_points=6)
+    M = Circle(embeddings.circle_to_rn, n_sample_points=6)
     pca_sample_points = 50
     # M.vectors_field = vectors_fields.double_sin
 
 elif MANIFOLD == "torus":
     logger.debug("Torus manifold")
-    M = Torus(embeddings.prepare_torus_to_rn(n=N), n_sample_points=[8, 4])
+    M = Torus(embeddings.torus_to_rn, n_sample_points=[8, 4])
     pca_sample_points = 50
-    M.vectors_field = vectors_fields.torus_first
+    M.vectors_field = vectors_fields.second_only
 
 
 elif MANIFOLD == "sphere":
 
     logger.debug("Sphere manifold")
-    M = Sphere(embeddings.prepare_sphere_to_rn(n=N), n_sample_points=[4, 4])
+    M = Sphere(embeddings.sphere_to_rn, n_sample_points=[4, 4])
     pca_sample_points = 75
 
-    # M.vectors_field = vectors_fields.second_only
+    M.vectors_field = vectors_fields.sphere_base
 
     if K != 12:
         logger.warning("Sphere manifold prefers K = 12")
@@ -76,7 +76,7 @@ elif MANIFOLD == "cone":
 
 elif MANIFOLD == "plane":
     logger.debug("Plane manifold")
-    M = Plane(embeddings.prepare_plane_to_rn(n=N), n_sample_points=[2, 2])
+    M = Plane(embeddings.plane_to_rn_flat, n_sample_points=[2, 2])
     pca_sample_points = 80
 
     # M.vectors_field = vectors_fields.second_only

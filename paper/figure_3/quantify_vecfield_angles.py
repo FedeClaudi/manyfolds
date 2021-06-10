@@ -20,7 +20,7 @@ plt.rc("font", family="serif")
 N = 64
 K = 15
 n_points = 40
-n_sec = 5
+n_sec = 3
 
 
 f, ax = plt.subplots()

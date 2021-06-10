@@ -8,10 +8,11 @@ import matplotlib.pyplot as plt
 
 from myterial import amber_darker, pink_darker, salmon_dark
 from fcutils.plot.figure import clean_axes
+from functools import partial
 
-from manifold import embeddings, Plane
+from manifold import Plane
 from manifold.rnn import RNN
-
+from manifold.maths import ortho_normal_matrix, unit_vector
 from manifold import Visualizer
 from manifold import visualize
 
@@ -26,7 +27,7 @@ visualize.tangent_vector_radius = 0.015
 visualize.rnn_inputs_radius = 0.01
 
 N = 128
-K = 64
+K = 6
 n_inputs = 2
 trial_n_sec = 120
 inputs_scale = 18
@@ -41,10 +42,29 @@ cam = dict(
 )
 
 
+def flat_plane_to_rn(v, m, p):
+    """
+        Embedd a plane by first embedding it in
+        R3 and then using a linear transformatin
+        to Rn
+    """
+    embedded = ((v * (p[0] + 0.2) + m * (p[1] + 0.2)) + 0.4) * 2
+    return tuple(embedded)
+
+
+def prepare_flat_plane_to_rn(n=64):
+    x = ortho_normal_matrix(n, 2)
+    v = unit_vector(x[:, 0])
+    m = unit_vector(x[:, 1])
+    return partial(flat_plane_to_rn, v, m)
+
+
 def vfield(p):
-    scale = 2
-    s1 = np.sin(2 * np.pi * p[0]) * scale
-    s2 = np.sin(2 * np.pi * p[1]) * scale
+    scale = 3
+    p0 = (p[0] * 1.2) - 0.1
+    p1 = (p[1] * 1.2) - 0.1
+    s1 = np.sin(2 * np.pi * p0) * scale
+    s2 = np.sin(2 * np.pi * p1) * scale
     return (-s1, -s2)
 
 
@@ -91,23 +111,23 @@ def generate_trial():
 
 
 # ------------------------------ create manifold ----------------------------- #
-M = Plane(embeddings.prepare_flat_plane_to_rn(n=N), n_sample_points=[8, 8])
+M = Plane(prepare_flat_plane_to_rn(n=N), n_sample_points=[9, 9])
 
 M.vectors_field = vfield
 M.print_embedding_bounds()
 
 # ---------------------------------- fir RNN --------------------------------- #
 rnn = RNN(M, n_units=N, n_inputs=n_inputs)
-rnn.build_W(k=K, scale=1)
+rnn.build_W(k=K)
 
 if SHOW_INPUTS:
     rnn.build_B(k=6, vector_fields=[input_one_vfield, input_two_vfield])
-# rnn.run_points(n_seconds=60, cut=False)
+rnn.run_points(n_seconds=60, cut=False)
 
 # --------------------------------- visualize -------------------------------- #
 viz = Visualizer(
     M,
-    axes=0,
+    axes=1,
     rnn=rnn,
     mark_rnn_endpoint=True,
     camera=cam,
@@ -118,10 +138,10 @@ viz = Visualizer(
 inputs, outputs = generate_trial()
 
 # evolve RNN dynamics with inputs
-h = M.points[41].embedded
-rnn.run_initial_condition(
-    h, n_seconds=trial_n_sec, inputs=inputs, cut=True, cut_th=20
-)
+# h = M.points[41].embedded
+# rnn.run_initial_condition(
+#     h, n_seconds=trial_n_sec, inputs=inputs, cut=True, cut_th=20
+# )
 
 # ------------------------------ visulize in 3D ------------------------------ #
 # show(tube, new=True)
@@ -159,5 +179,5 @@ for n, ax in enumerate(axes):
         xticklabels=np.arange(0, (trial_n_sec + 1), 15),
     )
 
-plt.show()
+# plt.show()
 # f.savefig(f"paper/figure_4/task.svg", format="svg")

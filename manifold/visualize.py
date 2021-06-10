@@ -39,7 +39,7 @@ class Visualizer:
 
     def __init__(
         self,
-        manifold,
+        manifold=None,
         rnn=None,
         pca_sample_points=64,
         point_color=None,
@@ -58,7 +58,7 @@ class Visualizer:
         self.manifold_alpha = manifold_alpha
         self.mark_rnn_endpoint = mark_rnn_endpoint
 
-        if self.manifold.n > 3:
+        if manifold is not None and self.manifold.n > 3:
             self.pca_sample_points = pca_sample_points
             self.fit_pca()
 
@@ -322,16 +322,18 @@ class Visualizer:
         show_tangents=True,
         show_rnn_inputs_vectors=True,
         show_manifold=True,
+        show_points=True,
         **kwargs,
     ):
-        if show_manifold:
-            self.visualize_manifold()
-        else:
-            for point in self.manifold.points:
-                self._scatter_point(point)
+        if self.manifold is not None:
+            if show_manifold:
+                self.visualize_manifold()
+            elif show_points:
+                for point in self.manifold.points:
+                    self._scatter_point(point)
 
-        if show_tangents:
-            self.visualize_tangent_vectors(scale=scale, x_range=x_range)
+            if show_tangents:
+                self.visualize_tangent_vectors(scale=scale, x_range=x_range)
 
         if self.rnn is not None:
             self.visualize_rnn_traces()

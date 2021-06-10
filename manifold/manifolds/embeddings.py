@@ -1,130 +1,67 @@
-from numpy import sin, cos, pi
 import numpy as np
-from scipy.stats import ortho_group
-from functools import partial
+from dataclasses import dataclass
+from typing import Callable
 
-from manifold.topology import Point
-from manifold.maths import ortho_normal_matrix, unit_vector
+from manifold.maths import ortho_normal_matrix
+from manifold.manifolds import _embeddings
 
 # --------------------------------- wrappers --------------------------------- #
-
-
-def parse(func):
-    """
-        Wrapper for 1D manifolds embedding to work
-        with either a single float or a Point
-        of 1 coordinate
-    """
-
-    def inner(*args):
-        if len(args) == 1:
-            p = args[0]
-
-            if not isinstance(p, float):
-                p = p[0]
-            return func(p)
-        else:
-            return func(*args)
-
-    return inner
-
-
-def parse2D(func):
-    """
-        Wrapper for 2D manifolds embedding to work
-        with either a Point as argument or a list of floats
-    """
-
-    def inner(p, *args):
-        if isinstance(p, np.ndarray):
-            return func(*p)
-        elif not isinstance(p, Point):
-            return func(p, *args)
-        else:
-            return func(*p.coordinates)
-
-    return inner
 
 
 # ---------------------------------------------------------------------------- #
 #                                    R^N = 3                                   #
 # ---------------------------------------------------------------------------- #
 
+
+@dataclass
+class Embedding:
+    name: str
+    phi: Callable
+
+    def __call__(self, *args):
+        return self.phi(*args)
+
+
+class TwoStepsEmbedding:
+    N = 64
+
+    def __init__(self, name, phi_1, scale=1):
+        self.name = name
+        self.mtx = ortho_normal_matrix(self.N, 3)
+        self.phi_1 = phi_1
+        self.scale = scale
+
+    def __call__(self, p):
+        embedded = self.mtx @ np.array(self.phi_1(p)) * self.scale
+        return embedded
+
+
 # ----------------------------------- line ----------------------------------- #
-@parse
-def line_to_r3_flat(p):
-    return (p, p, p)
 
-
-@parse
-def line_to_r3(p):
-    return (sin(2 * p) - 0.5, sin(p) * 2 - 1, -cos(p) * 4 + 3)
-
-
-@parse
-def helix_to_r3(p):
-    return (cos(4 * pi * p) / 2, sin(4 * pi * p) / 2, p / 2 + 0.25)
-
+line_to_r3_flat = Embedding("line to R3 flat", _embeddings.line_to_r3_flat)
+line_to_r3 = Embedding("line to R3", _embeddings.line_to_r3)
+helix_to_r3 = Embedding("helix to R3", _embeddings.helix_to_r3)
 
 # ---------------------------------- circle ---------------------------------- #
-@parse
-def circle_to_r3_flat(p):
-    """
-        Embedds a circle in 3D but keeping the circle flat in one dimension
-    """
-    return (sin(p), cos(p), 1)
-
-
-@parse
-def circle_to_r3_angled(p):
-    return (sin(p), cos(p), sin(p))
-
-
-@parse
-def circle_to_r3(p):
-    # return (sin(p), 0.8 * cos(p), cos(p * 2) ** 2 * 0.5 + 0.5)
-    return (sin(p), 0.8 * cos(p), cos(p) ** 2 * 0.5 + 0.5)
-
+circle_to_r3_flat = Embedding(
+    "circle to R3 flat", _embeddings.circle_to_r3_angled
+)
+circle_to_r3 = Embedding("circle to R3", _embeddings.circle_to_r3_bent)
+circle_to_r3_curvy = Embedding("circle to R3 curvy", _embeddings.circle_to_r3)
 
 # ---------------------------------- sphere ---------------------------------- #
-@parse2D
-def sphere_to_r3(p0, p1):
-    return (sin(p0) * cos(p1), sin(p0) * sin(p1), cos(p0))
-
+sphere_to_r3 = Embedding("sphere to R3", _embeddings.sphere_to_r3)
 
 # ----------------------------------- plane ---------------------------------- #
-@parse2D
-def plane_to_r3_flat(p0, p1):
-    return (p0, p1, 0.5 * (p0 + p1))
-
-
-@parse2D
-def plane_to_r3(p0, p1):
-    return (p0, sin(p1) * 0.5, 0.63 * (p1 - p0) ** 2)
-
+plane_to_r3_flat = Embedding("plane to R3 flat", _embeddings.plane_to_r3_flat)
+plane_to_r3 = Embedding("plane to R3", _embeddings.plane_to_r3)
 
 # ----------------------------------- torus ---------------------------------- #
-@parse2D
-def torus_to_r3(p0, p1):
-    R = 0.75  # torus center -> tube center
-    r = 0.25  # tube radius
-    return (
-        (R + r * cos(p0)) * cos(p1),
-        (R + r * cos(p0)) * sin(p1),
-        r * sin(p0),
-    )
-
+torus_to_r3 = Embedding("torus to R3", _embeddings.torus_to_r3)
 
 # --------------------------------- cylinder --------------------------------- #
-@parse2D
-def cylinder_to_r3(p0, p1):
-    return (sin(p0) / 2, cos(p0) / 2, p1 + 0.1)
-
-
-@parse2D
-def cylinder_to_r3_as_cone(p0, p1):
-    k = p1 / 2 + 0.4
-    return (k * sin(p0) / 2, k * cos(p0) / 2, p1 + 0.5)
+cylinder_to_r3 = Embedding("cylinder to R3", _embeddings.cylinder_to_r3)
+cone_to_r3 = Embedding("cone to R3", _embeddings.cylinder_to_r3_as_cone)
 
 
 # ---------------------------------------------------------------------------- #
@@ -132,197 +69,46 @@ def cylinder_to_r3_as_cone(p0, p1):
 # ---------------------------------------------------------------------------- #
 
 
-class TwoStepsEmbedding:
-    def __init__(self, phi_1, n):
-        # initialize projection matrix
-        self.mtx = ortho_group.rvs(n)[:, :3]
-        self.phi_1 = phi_1
-
-    def __call__(self, p):
-        embedded = self.mtx @ np.array(self.phi_1(p))
-        return embedded
-
-
 # ----------------------------------- line ----------------------------------- #
-def prepare_line_to_rn(n=64):
-    return TwoStepsEmbedding(line_to_r3, n)
-
-
-@parse
-def line_to_rn_flat(p, n=64):
-    """
-        Embeds points of a line manifold in high D space
-        with a set of trigonometric functions
-    """
-    coords = []
-    scale = np.linspace(0.8, 0.2, n + 1)
-    for dim in range(n):
-        coords.append(p * scale[n])
-    return tuple(coords)
+line_to_rn_flat = TwoStepsEmbedding(
+    "line to rn flat", _embeddings.line_to_r3_flat
+)
+line_to_rn = TwoStepsEmbedding("line to rn", _embeddings.line_to_r3)
+helix_to_rn = TwoStepsEmbedding("helix to rn", _embeddings.helix_to_r3)
 
 
 # ---------------------------------- circle ---------------------------------- #
-def circle_to_rn(mtx, p):
-    """
-        Embedd a plane by first embedding it in
-        R3 and then using a linear transformatin
-        to Rn
-    """
-    circle_3d = circle_to_r3(p)
-    embedded = mtx @ np.array(circle_3d) * 2
-    return tuple(embedded)
-
-
-def prepare_circle_to_rn(n=64):
-    mtx = ortho_normal_matrix(n, 3)
-    return partial(circle_to_rn, mtx)
-
-
-@parse
-def circle_to_rn_angled(v, m, p):
-    """
-        Embedding of a circle in a random 2D plane in R^n
-        from: https://math.stackexchange.com/questions/1184038/what-is-the-equation-of-a-general-circle-in-3-d-space
-    """
-    # define points on the circle of radius 1: 𝑟(cos𝑡)𝐯1+𝑟(sin𝑡)𝐯
-    coords = cos(p) * v + sin(p) * m
-    # coords *= 3
-
-    return tuple(coords)
-
-
-def prepare_circle_angled_to_rn(n=64):
-    x = ortho_normal_matrix(n, 2)
-    # x = gram_schmidt(np.random.randn(n, 2))
-    v = unit_vector(x[:, 0])
-    m = unit_vector(x[:, 1])
-
-    return partial(circle_to_rn_angled, v, m)
-
-
-# ----------------------------------- helix ---------------------------------- #
-
-
-@parse
-def helix_to_rn(v, m, n, p):
-    """
-        Embeds points of a helix manifold in high D space
-        with a set of trigonometric functions
-    """
-    if isinstance(p, Point):
-        p = p.coordinates[0]
-    embedded = cos(4 * pi * p) * v + sin(4 * pi * p) * m + p * n
-    return tuple(embedded)
-
-
-def prepare_helix_to_rn(n=64):
-    x = ortho_group.rvs(n)
-    v = x[:, 0]
-    m = x[:, 1]
-    n = x[:, 2]
-
-    return partial(helix_to_rn, v, m, n)
+circle_to_rn_flat = TwoStepsEmbedding(
+    "circle to rn flat", _embeddings.circle_to_r3_angled, scale=3
+)
+circle_to_rn = TwoStepsEmbedding(
+    "circle to rn", _embeddings.circle_to_r3, scale=3
+)
+circle_to_rn_bent = TwoStepsEmbedding(
+    "circle to rn bent", _embeddings.circle_to_r3_bent, scale=3
+)
 
 
 # ---------------------------------- sphere ---------------------------------- #
-def sphere_to_rn(mtx, p):
-    """
-        Embedd a sphere by first embedding it in
-        R3 and then using a linear transformatin
-        to Rn
-    """
-    sphere_3d = sphere_to_r3(p)
-    embedded = mtx @ np.array(sphere_3d) * 2
-    return tuple(embedded)
-
-
-def prepare_sphere_to_rn(n=64):
-    mtx = ortho_normal_matrix(n, 3)
-    # mtx = np.load('x.npy')
-
-    return partial(sphere_to_rn, mtx)
-
+sphere_to_rn = TwoStepsEmbedding("sphere to rn", _embeddings.sphere_to_r3)
+ellipse_to_rn = TwoStepsEmbedding("ellipse to rn", _embeddings.ellipse_to_r3)
 
 # ---------------------------------- plane ---------------------------------- #
-def plane_to_rn(mtx, p):
-    """
-        Embedd a plane by first embedding it in
-        R3 and then using a linear transformatin
-        to Rn
-    """
-    plane_3d = plane_to_r3(p)
-    embedded = mtx @ (np.array(plane_3d) * 2) * 2
-    return tuple(embedded)
-
-
-def prepare_plane_to_rn(n=64):
-    # mtx = ortho_group.rvs(n)[:, :3]
-    mtx = ortho_normal_matrix(n, 3)
-    return partial(plane_to_rn, mtx)
-
-
-def flat_plane_to_rn(v, m, p):
-    """
-        Embedd a plane by first embedding it in
-        R3 and then using a linear transformatin
-        to Rn
-    """
-    embedded = ((v * (p[0] + 0.2) + m * (p[1] + 0.2)) + 0.4) * 2
-    return tuple(embedded)
-
-
-def prepare_flat_plane_to_rn(n=64):
-    x = ortho_normal_matrix(n, 2)
-    v = unit_vector(x[:, 0])
-    m = unit_vector(x[:, 1])
-    return partial(flat_plane_to_rn, v, m)
-
+plane_to_rn = TwoStepsEmbedding("plane to rn", _embeddings.plane_to_r3)
+plane_to_rn_flat = TwoStepsEmbedding(
+    "plane to rn flat", _embeddings.plane_to_r3_flat, scale=2
+)
 
 # ----------------------------------- torus ---------------------------------- #
-def torus_to_rn(mtx, p):
-    """
-        Embedd a torus by first embedding it in
-        R3 and then using a linear transformatin
-        to Rn
-    """
-    torus_3d = torus_to_r3(p)
-    embedded = mtx @ np.array(torus_3d) * 2.5
-    return tuple(embedded)
-
-
-def prepare_torus_to_rn(n=64):
-    mtx = ortho_normal_matrix(n, 3)
-    return partial(torus_to_rn, mtx)
-
+torus_to_rn = TwoStepsEmbedding("torus to rn", _embeddings.torus_to_r3)
+thin_torus_to_rn = TwoStepsEmbedding(
+    "thin torus to rn", _embeddings.thin_torus_to_r3
+)
 
 # ----------------------------------- cylinder ---------------------------------- #
-def cylinder_to_rn(mtx, p):
-    """
-        Embedd a cylinder by first embedding it in
-        R3 and then using a linear transformatin
-        to Rn
-    """
-    cylinder_3d = cylinder_to_r3(p)
-    embedded = mtx @ np.array(cylinder_3d)
-    return tuple(embedded)
-
-
-def prepare_cylinder_to_rn(n=64):
-    mtx = ortho_group.rvs(n)[:, :3]
-    return partial(cylinder_to_rn, mtx)
-
-
-def cylinder_as_cone_to_rn(mtx, p):
-    """
-        Embedd a cylinder by first embedding it in
-        R3 and then using a linear transformatin
-        to Rn
-    """
-    cylinder_3d = cylinder_to_r3_as_cone(p)
-    embedded = mtx @ np.array(cylinder_3d)
-    return tuple(embedded)
-
-
-def prepare_cylinder_as_cone_to_rn(n=64):
-    mtx = ortho_group.rvs(n)[:, :3]
-    return partial(cylinder_as_cone_to_rn, mtx)
+cylinder_to_rn = TwoStepsEmbedding(
+    "cylinder to rn", _embeddings.cylinder_to_r3
+)
+cone_to_rn = TwoStepsEmbedding(
+    "cone to rn", _embeddings.cylinder_to_r3_as_cone
+)

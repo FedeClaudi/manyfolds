@@ -1,17 +1,21 @@
 import sys
 
 sys.path.append("./")
-from vedo import settings, screenshot
+from vedo import screenshot
 
 from manifold import embeddings, Sphere
 from manifold.manifolds.vectors_fields import (
     sphere_base,
-    sin_on_sphere,
-    sphere_base2,
+    sphere_equator,
+    sphere_poles,
 )
-from manifold.tangent_vector import get_basis_tangent_vector
-from manifold.manifolds.embeddings import parse2D
+
+from manifold.manifolds._embeddings import parse2D
 from manifold.visualize import Visualizer
+from manifold import visualize
+
+visualize.reco_surface_radius = 0.1
+visualize.point_size = 0.025
 
 
 @parse2D
@@ -19,43 +23,28 @@ def embedding_one(p0, p1):
     return (p0, p1, p1 * p0 + 0.5)
 
 
-vector_fields = (sphere_base, sin_on_sphere, sphere_base2)
+vector_fields = (sphere_base, sphere_equator, sphere_poles)
 V = 0
 
 
-M = Sphere(embeddings.sphere_to_r3, n_sample_points=[4, 12])
+M = Sphere(embeddings.sphere_to_rn, n_sample_points=[12, 24])
 M.vectors_field = vector_fields[V]
+M.points = M.points[13:-13]
 
 
-viz = Visualizer(
-    M, axes=0, wireframe=False, manifold_color="#b8b6d1", point_color="#3838BA"
-)
-
-viz.visualize_manifold()
-viz.visualize_tangent_vectors(scale=0.15, x_range=0.1)
+viz = Visualizer(M, axes=0, manifold_alpha=1, pca_sample_points=100)
 
 for point in viz.manifold.points:
-    pt = point.embedded
-    for fn in point.base_functions:
-        fn.embedd()
-        vec = get_basis_tangent_vector(point, fn) * 0.1
-        viz._render_cylinder([pt, pt + vec], "#000000", r=0.015, alpha=1)
+    viz.visualize_basis_vectors_at_point(point, scale=0.05, r=0.01)
 
-for actor in viz.actors:
-    actor.lighting("off")
 
-if M.d == 2:
-    viz._add_silhouette(viz.manifold_actor, lw=3)
+viz.plotter.camera.SetPosition([-0.312, 1.165, -6.802])
+viz.plotter.camera.SetFocalPoint([0.0, 0.006, 0.0])
+viz.plotter.camera.SetViewUp([-0.999, -0.027, 0.041])
+viz.plotter.camera.SetDistance(6.908)
+viz.plotter.camera.SetClippingRange([4.393, 10.089])
 
-viz.plotter.camera.SetPosition([-0.882, -5.163, 0.246])
-viz.plotter.camera.SetFocalPoint([0.0, 0.0, 0.0])
-viz.plotter.camera.SetViewUp([0.032, 0.042, 0.999])
-viz.plotter.camera.SetDistance(5.244)
-viz.plotter.camera.SetClippingRange([3.286, 7.721])
 
-viz.plotter.show(*viz.actors)
+viz.show(scale=0.3)
 
-settings.screenshotTransparentBackground = 1
 screenshot(f"./paper/fig_1_and_2/{M.name}_vecs_{V}.png")
-
-viz.plotter.close()
