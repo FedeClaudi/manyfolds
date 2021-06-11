@@ -23,9 +23,14 @@ def take_derivative_at_point(arr, idx):
 
 
 def get_basis_tangent_vector(point, base_function):
-    return take_derivative_at_point(
+    # base_fn_at_point = base_function.manifold_coords[base_function.embedded_point_index, :]
+    # vec = point.embedding_map.push_forward(base_fn_at_point)
+    # return vec
+    # # a = 1
+    vec2 = take_derivative_at_point(
         base_function.embedded, base_function.embedded_point_index
     )
+    return vec2
 
 
 def get_tangent_vector(point, vectors_field=None, debug=False):

@@ -69,7 +69,6 @@ class BaseFunction:
         return get_basis_tangent_vector(self.point, self)
 
 
-@dataclass
 class BaseFunction2D:
     """
         Function for a point, used to take its derivative
@@ -77,18 +76,16 @@ class BaseFunction2D:
         space at the point.
     """
 
-    point: Point
-    f: Map
-    dim_idx: int
-
     embedded = None
 
-    def embedd(self, x_range=0.1):
-        """
-            Embeds the function's domain in embedding space
-            using the inverse of the point's chart's map and the 
-            manifold embedding map
-        """
+    def __init__(self, point, f, dim_idx):
+        self.point = point
+        self.f = f
+        self.dim_idx = dim_idx
+
+        self.get_manifold_coordinates()
+
+    def get_manifold_coordinates(self, x_range=0.2):
         N = 100  # number of samples over the domain
         self.embedded_point_index = int(
             N / 2
@@ -114,11 +111,19 @@ class BaseFunction2D:
         chart_coords[:, self.dim_idx] = self.f(domain)[:N]
 
         # 2. use the chart inverse map to go the manifold
-        manifold_coords = self.point.chart.x.inverse(chart_coords)
+        self.manifold_coords = self.point.chart.x.inverse(chart_coords)
 
+    def embedd(self, x_range=0.1):
+        """
+            Embeds the function's domain in embedding space
+            using the inverse of the point's chart's map and the 
+            manifold embedding map
+        """
         # 3. use the embedding map to the the coordinates in the embedding space
         self.embedded = (
-            np.apply_along_axis(self.point.embedding_map, 1, manifold_coords)
+            np.apply_along_axis(
+                self.point.embedding_map, 1, self.manifold_coords
+            )
             + self.point.shift
         )
 

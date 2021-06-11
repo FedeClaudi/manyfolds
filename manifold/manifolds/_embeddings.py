@@ -1,5 +1,8 @@
-from numpy import sin, cos, pi
-import numpy as np
+# from numpy import sin, cos, pi
+# import numpy as np
+from autograd import numpy as np
+from autograd.numpy import sin, cos, pi
+from autograd.numpy.numpy_boxes import ArrayBox
 
 from manifold.topology import Point
 
@@ -33,7 +36,7 @@ def parse2D(func):
     """
 
     def inner(p, *args):
-        if isinstance(p, np.ndarray):
+        if isinstance(p, np.ndarray) or isinstance(p, ArrayBox):
             return func(*p)
         elif not isinstance(p, Point):
             return func(p, *args)
@@ -64,12 +67,12 @@ def helix_to_r3(p):
 
 
 # ---------------------------------- circle ---------------------------------- #
-@parse
-def circle_to_r3_flat(p):
-    """
-        Embedds a circle in 3D but keeping the circle flat in one dimension
-    """
-    return (sin(p), cos(p), 1)
+# @parse
+# def circle_to_r3_flat(p):
+#     """
+#         Embedds a circle in 3D but keeping the circle flat in one dimension
+#     """
+#     return (sin(p), cos(p), 1)
 
 
 @parse
@@ -90,7 +93,7 @@ def circle_to_r3(p):
 # ---------------------------------- sphere ---------------------------------- #
 @parse2D
 def sphere_to_r3(p0, p1):
-    return
+    return (sin(p0) * cos(p1), sin(p0) * sin(p1), cos(p0))
 
 
 @parse2D

@@ -5,7 +5,7 @@ from manifold import vectors_fields
 from manifold import Visualizer
 
 K = 12
-MANIFOLD = "cylinder"
+MANIFOLD = "sphere"
 
 if MANIFOLD == "plane":
     M = Plane(embeddings.plane_to_r3, n_sample_points=[3, 2])
@@ -37,5 +37,14 @@ rnn.run_points(n_seconds=10)
 
 
 # visualize in embedding
-viz = Visualizer(M, rnn)
+viz = Visualizer(M, None)
+
+for point in M.points:
+    for fn in point.base_functions:
+        fn_coords = fn.manifold_coords[50, :]
+        p = point.embedding_map.push_forward(fn_coords)
+        a = 1
+
+    viz.visualize_basis_vectors_at_point(point, scale=0.15)
+
 viz.show(x_range=0.2, scale=0.27)

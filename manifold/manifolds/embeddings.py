@@ -1,6 +1,9 @@
-import numpy as np
-from dataclasses import dataclass
-from typing import Callable
+# import numpy as np
+# from dataclasses import dataclass
+# from typing import Callable
+# from functools import partial
+from autograd import jacobian, elementwise_grad
+from autograd import numpy as np
 
 from manifold.maths import ortho_normal_matrix
 from manifold.manifolds import _embeddings
@@ -13,27 +16,52 @@ from manifold.manifolds import _embeddings
 # ---------------------------------------------------------------------------- #
 
 
-@dataclass
 class Embedding:
-    name: str
-    phi: Callable
+    def __init__(self, name, phi):
+        self.name = name
+        self.phi = phi
+
+        self.push_forward = elementwise_grad(phi)
 
     def __call__(self, *args):
         return self.phi(*args)
+
+    def __repr__(self):
+        return f"Embedding map: {self.name}"
+
+    def __str__(self):
+        return f"Embedding map: {self.name}"
 
 
 class TwoStepsEmbedding:
     N = 64
 
     def __init__(self, name, phi_1, scale=1):
+        mtx = ortho_normal_matrix(self.N, 3)
         self.name = name
-        self.mtx = ortho_normal_matrix(self.N, 3)
+        self.mtx = mtx
         self.phi_1 = phi_1
         self.scale = scale
 
+        def _embedd(p):
+            return mtx @ np.array(phi_1(p)) * scale
+
+        self._push_forward = jacobian(_embedd)
+
+    def _embedd(self, p):
+        return self.mtx @ np.array(self.phi_1(p)) * self.scale
+
+    def push_forward(self, x):
+        return self._push_forward(x)
+
     def __call__(self, p):
-        embedded = self.mtx @ np.array(self.phi_1(p)) * self.scale
-        return embedded
+        return self._embedd(p)
+
+    def __repr__(self):
+        return f"Embedding map: {self.name}"
+
+    def __str__(self):
+        return f"Embedding map: {self.name}"
 
 
 # ----------------------------------- line ----------------------------------- #
