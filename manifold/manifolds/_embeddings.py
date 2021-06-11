@@ -1,11 +1,12 @@
-import numpy as np
+from autograd import numpy as np
+from autograd import jacobian
 from sympy.parsing.sympy_parser import parse_expr
 from sympy import diff, lambdify
 from sympy.abc import p
 
 
 from manifold.topology import Point
-from manifold.maths import unit_vector
+from manifold.maths import unit_vector, ortho_normal_matrix
 
 
 class Embedding:
@@ -82,3 +83,32 @@ class Embedding2D:
 
     def __str__(self):
         return self.__repr__()
+
+
+class EmbeddingRN:
+    def __init__(self, name, embedding, n=64, scale=1):
+        self.name = name
+        self.mtx = ortho_normal_matrix(n, 3)
+        self.scale = scale
+        self._embedding_r3 = embedding
+
+        def phi(x):
+            return self.mtx @ x
+
+        self.phi_star = jacobian(phi)
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return f"Embedding to RN (n={self.n}): {self.name}"
+
+    def __call__(self, p):
+        return self.mtx @ self._embedding_r3(p) * self.scale
+
+    def push_forward(self, p):
+        vec_in_r3 = self._embedding_r3.push_forward(p)
+        # vec = self.phi_star(vec_in_r3)
+        return self.mtx @ vec_in_r3
+
+        # return np.sum(vec,1)

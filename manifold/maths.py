@@ -1,4 +1,4 @@
-import numpy as np
+from autograd import numpy as np
 import itertools
 from loguru import logger
 

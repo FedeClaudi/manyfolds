@@ -7,7 +7,7 @@ from manifold import vectors_fields
 from manifold import Visualizer
 
 # --------------------------------- settings --------------------------------- #
-MANIFOLD = "plane"
+MANIFOLD = "sphere"
 N = 64
 K = 10
 
@@ -95,6 +95,5 @@ rnn = RNN(M, n_units=N)
 rnn.build_W(k=K, scale=1)
 rnn.run_points(n_seconds=60, cut=True)
 
-
 viz = Visualizer(M, rnn=rnn, pca_sample_points=pca_sample_points)
-viz.show(x_range=[0.1, 0.2], scale=0.2)
+viz.show(scale=0.3)

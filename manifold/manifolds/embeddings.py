@@ -1,4 +1,4 @@
-from manifold.manifolds._embeddings import Embedding, Embedding2D
+from manifold.manifolds._embeddings import Embedding, Embedding2D, EmbeddingRN
 
 # # ---------------------------------------------------------------------------- #
 # #                                    R^N = 3                                   #
@@ -65,3 +65,10 @@ cylinder_to_r3_as_cone = Embedding2D(
     "cylinder_to_r3_as_cone",
     "p1 / 2 + 0.4 * sin(p0) / 2, p1 / 2 + 0.4 * cos(p0) / 2, p1 + 0.5",
 )
+
+
+# ---------------------------------------------------------------------------- #
+#                               EMBEDDINGS IN RN                               #
+# ---------------------------------------------------------------------------- #
+
+sphere_to_rn = EmbeddingRN("sphere to rn", sphere_to_r3, scale=1)
