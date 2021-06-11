@@ -1,104 +1,84 @@
+import numpy as np
 from sympy.parsing.sympy_parser import parse_expr
-
-helix_to_r3 = parse_expr("cos(4 * pi * p) / 2, sin(4 * pi * p) / 2, p + 0.25")
-
-
-# # ---------------------------------------------------------------------------- #
-# #                                    R^N = 3                                   #
-# # ---------------------------------------------------------------------------- #
-
-# # ----------------------------------- line ----------------------------------- #
-# @parse
-# def line_to_r3_flat(p):
-#     return (p, p, p)
+from sympy import diff, lambdify
+from sympy.abc import p
 
 
-# @parse
-# def line_to_r3(p):
-#     return (sin(2 * p) - 0.5, sin(p) * 2 - 1, -cos(p) * 4 + 3)
+from manifold.topology import Point
+from manifold.maths import unit_vector
 
 
-# @parse
-# def helix_to_r3(p):
-#     return (cos(4 * pi * p) / 2, sin(4 * pi * p) / 2, p + 0.25)
+class Embedding:
+    def __init__(self, name, expression):
+        self.name = name
+        self._phi = parse_expr(expression)
+        self._phi_star = diff(self._phi, p)
+
+        self.phi = lambdify(p, self._phi)
+        self.phi_star = [lambdify(p, part.diff()) for part in self._phi]
+
+    def __call__(self, val):
+        if isinstance(val, Point):
+            val = val[0]
+        return self.phi(val)
+
+    def push_forward(self, base_function):
+        coords = base_function.get_manifold_coordinates()
+        at_point = (
+            coords[base_function.embedded_point_index, :]
+            .ravel()
+            .astype(np.float64)
+        )
+        return np.hstack([der(at_point) for der in self.phi_star])
+
+    def __repr__(self):
+        return f'Embedding: {self.name} | phi: "{self._phi}" | phi_star: "{self._phi_star}"'
+
+    def __str__(self):
+        return self.__repr__()
 
 
-# # ---------------------------------- circle ---------------------------------- #
-# # @parse
-# # def circle_to_r3_flat(p):
-# #     """
-# #         Embedds a circle in 3D but keeping the circle flat in one dimension
-# #     """
-# #     return (sin(p), cos(p), 1)
+class Embedding2D:
+    def __init__(self, name, expression):
+        self.name = name
+        self._phi = parse_expr(expression)
+        self._phi_star = diff(self._phi, "p0", "p1")
 
+        self.phi = lambdify(["p0", "p1"], self._phi)
 
-# @parse
-# def circle_to_r3_angled(p):
-#     return (sin(p), cos(p), sin(p))
+        self.phi_star_0, self.phi_star_1 = [], []
+        for part in self._phi:
+            self.phi_star_0.append(lambdify(["p0", "p1"], part.diff("p0")))
+            self.phi_star_1.append(lambdify(["p0", "p1"], part.diff("p1")))
 
+    def __call__(self, val):
+        if isinstance(val, Point):
+            p0, p1 = val.coordinates
+        else:
+            p0, p1 = val
+        return self.phi(p0, p1)
 
-# @parse
-# def circle_to_r3_bent(p):
-#     return (sin(p), 0.8 * cos(p), cos(p) ** 2 * 0.5 + 0.5)
+    def push_forward(self, base_function):
+        if isinstance(base_function, np.ndarray):
+            at_point = base_function
+            raise ValueError
+        else:
+            coords = base_function.manifold_coords
+            at_point = (
+                coords[base_function.embedded_point_index, :]
+                .ravel()
+                .astype(np.float64)
+            )
 
+        partial_derivative = (
+            self.phi_star_0 if base_function.dim_idx == 0 else self.phi_star_1
+        )
+        return unit_vector(
+            np.hstack([der(*at_point) for der in partial_derivative])
+        )
 
-# @parse
-# def circle_to_r3(p):
-#     return (sin(p), 0.8 * cos(p), cos(p * 2) ** 2 * 0.5 + 0.5)
+    def __repr__(self):
+        return f'Embedding: {self.name} | phi: "{self._phi}" | phi_star: "{self._phi_star}"'
 
-
-# # ---------------------------------- sphere ---------------------------------- #
-# @parse2D
-# def sphere_to_r3(p0, p1):
-#     return (sin(p0) * cos(p1), sin(p0) * sin(p1), cos(p0))
-
-
-# @parse2D
-# def ellipse_to_r3(p0, p1):
-#     return (sin(p0) * cos(p1) * 0.3, sin(p0) * sin(p1) * 0.3, cos(p0))
-
-
-# # ----------------------------------- plane ---------------------------------- #
-# @parse2D
-# def plane_to_r3_flat(p0, p1):
-#     return (p0 + 0.2, p1 + 0.2, 0.5 * (p0 + p1))
-
-
-# @parse2D
-# def plane_to_r3(p0, p1):
-#     return (p0, sin(p1) * 2, 0.4 * (p1 - p0) ** 2)
-
-
-# # ----------------------------------- torus ---------------------------------- #
-# @parse2D
-# def torus_to_r3(p0, p1):
-#     R = 0.75  # torus center -> tube center
-#     r = 0.25  # tube radius
-#     return (
-#         (R + r * cos(p0)) * cos(p1),
-#         (R + r * cos(p0)) * sin(p1),
-#         r * sin(p0),
-#     )
-
-
-# @parse2D
-# def thin_torus_to_r3(p0, p1):
-#     R = 1  # torus center -> tube center
-#     r = 0.18  # tube radius
-#     return (
-#         (R + r * cos(p0)) * cos(p1),
-#         (R + r * cos(p0)) * sin(p1),
-#         r * sin(p0),
-#     )
-
-
-# # --------------------------------- cylinder --------------------------------- #
-# @parse2D
-# def cylinder_to_r3(p0, p1):
-#     return (sin(p0) / 2, cos(p0) / 2, p1 + 0.1)
-
-
-# @parse2D
-# def cylinder_to_r3_as_cone(p0, p1):
-#     k = p1 / 2 + 0.4
-#     return (k * sin(p0) / 2, k * cos(p0) / 2, p1 + 0.5)
+    def __str__(self):
+        return self.__repr__()

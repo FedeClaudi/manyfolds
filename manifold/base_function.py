@@ -55,7 +55,7 @@ class BaseFunction:
         # 3. use the embedding map to the the coordinates in the embedding space
         self.embedded = np.apply_along_axis(
             self.point.embedding_map, 1, manifold_coords
-        )
+        )[:, :, 0]
 
     @property
     def tangent_vector(self):

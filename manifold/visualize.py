@@ -46,6 +46,7 @@ class Visualizer:
         wireframe=False,
         manifold_color=None,
         mark_rnn_endpoint=False,
+        show_basis_functions=False,
     ):
         self.manifold = manifold
         self.rnn = rnn
@@ -54,6 +55,7 @@ class Visualizer:
         self.point_color = point_color or "#3838BA"
         self.manifold_alpha = manifold_alpha
         self.mark_rnn_endpoint = mark_rnn_endpoint
+        self.show_basis_functions = show_basis_functions
 
         if manifold is not None and self.manifold.n > 3:
             self.pca_sample_points = pca_sample_points
@@ -208,20 +210,20 @@ class Visualizer:
 
         for point in self.manifold.points:
             # draw base functions
-            for fn in point.base_functions:
-                fn.embedd(x_range=x_range[fn.dim_idx])
-                if self.manifold.n == 3:
-                    coordinates = fn.embedded
-                else:
-                    coordinates = self.pca.transform(fn.embedded)
+            if self.show_basis_functions:
+                for fn in point.base_functions:
+                    fn.embedd(x_range=x_range[fn.dim_idx])
+                    if self.manifold.n == 3:
+                        coordinates = fn.embedded
+                    else:
+                        coordinates = self.pca.transform(fn.embedded)
 
-                mesh = Tube(
-                    coordinates,
-                    r=0.02,
-                    c=(1 - fn.dim_idx * 0.2) * np.array([0.3, 0.3, 0.3]),
-                )
-                self.actors.append(mesh)
-                self._add_silhouette(mesh, lw=100)
+                    mesh = Tube(
+                        coordinates,
+                        r=0.02,
+                        c=(1 - fn.dim_idx * 0.2) * np.array([0.3, 0.3, 0.3]),
+                    )
+                    self.actors.append(mesh)
 
             # get tangent vector as sum of basis
             vector = (
