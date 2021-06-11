@@ -90,7 +90,7 @@ def circle_to_r3(p):
 # ---------------------------------- sphere ---------------------------------- #
 @parse2D
 def sphere_to_r3(p0, p1):
-    return
+    return (sin(p0) * cos(p1), sin(p0) * sin(p1), cos(p0))
 
 
 @parse2D

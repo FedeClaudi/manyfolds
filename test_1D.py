@@ -13,7 +13,7 @@ if MANIFOLD == "line":
 elif MANIFOLD == "helix":
     M = Line(embeddings.helix_to_r3, n_sample_points=3)
 elif MANIFOLD == "circle":
-    M = Circle(embeddings.circle_to_r3_flat, n_sample_points=1)
+    M = Circle(embeddings.circle_to_r3, n_sample_points=1)
 
 
 # define vector field
@@ -22,7 +22,7 @@ elif MANIFOLD == "circle":
 # create RNN
 rnn = RNN(M, n_units=N)
 rnn.build_W(k=K)
-rnn.run_points(n_seconds=0.5)
+rnn.run_points(n_seconds=5)
 
 # visualize in embedding
 viz = Visualizer(M, rnn)

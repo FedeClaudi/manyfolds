@@ -25,7 +25,7 @@ elif MANIFOLD == "sphere":
 
 elif MANIFOLD == "cylinder":
     M = Cylinder(embeddings.cylinder_to_r3, n_sample_points=[6, 2])
-    M.vectors_field = vectors_fields.cylinder_vfield
+    M.vectors_field = vectors_fields.second_only
     x_range = [0.1, 0.05]
 
 M.print_embedding_bounds()
