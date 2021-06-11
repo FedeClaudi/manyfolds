@@ -18,10 +18,7 @@ from myterial import (
     pink_dark,
 )
 
-from manifold.tangent_vector import (
-    get_tangent_vector,
-    get_basis_tangent_vector,
-)
+from manifold.tangent_vector import get_tangent_vector
 from manifold._visualize import make_palette
 
 # settings
@@ -213,14 +210,18 @@ class Visualizer:
             # draw base functions
             for fn in point.base_functions:
                 fn.embedd(x_range=x_range[fn.dim_idx])
-                # if self.manifold.n == 3:
-                #     coordinates = fn.embedded
-                # else:
-                #     coordinates = self.pca.transform(fn.embedded)
+                if self.manifold.n == 3:
+                    coordinates = fn.embedded
+                else:
+                    coordinates = self.pca.transform(fn.embedded)
 
-                # mesh = Tube(coordinates, r=0.02, c=(1 - fn.dim_idx * .2) * np.array([.3, .3, .3]),)
-                # self.actors.append(mesh)
-                # self._add_silhouette(mesh, lw=100)
+                mesh = Tube(
+                    coordinates,
+                    r=0.02,
+                    c=(1 - fn.dim_idx * 0.2) * np.array([0.3, 0.3, 0.3]),
+                )
+                self.actors.append(mesh)
+                self._add_silhouette(mesh, lw=100)
 
             # get tangent vector as sum of basis
             vector = (
@@ -259,7 +260,8 @@ class Visualizer:
         pt = point.embedded
         for fn in point.base_functions:
             fn.embedd()
-            vec = get_basis_tangent_vector(point, fn) * scale
+            vec = point.embedding_map.push_forward(fn) * scale
+
             if self.manifold.n > 3:
                 pt = point.embedded
                 vec = self.pca.transform((pt + vec).reshape(1, -1))[0]

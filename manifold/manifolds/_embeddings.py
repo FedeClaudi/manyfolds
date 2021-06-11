@@ -1,147 +1,104 @@
-# from numpy import sin, cos, pi
-# import numpy as np
-from autograd import numpy as np
-from autograd.numpy import sin, cos, pi
-from autograd.numpy.numpy_boxes import ArrayBox
+from sympy.parsing.sympy_parser import parse_expr
 
-from manifold.topology import Point
-
-# --------------------------------- wrappers --------------------------------- #
+helix_to_r3 = parse_expr("cos(4 * pi * p) / 2, sin(4 * pi * p) / 2, p + 0.25")
 
 
-def parse(func):
-    """
-        Wrapper for 1D manifolds embedding to work
-        with either a single float or a Point
-        of 1 coordinate
-    """
+# # ---------------------------------------------------------------------------- #
+# #                                    R^N = 3                                   #
+# # ---------------------------------------------------------------------------- #
 
-    def inner(*args):
-        if len(args) == 1:
-            p = args[0]
-
-            if not isinstance(p, float):
-                p = p[0]
-            return func(p)
-        else:
-            return func(*args)
-
-    return inner
-
-
-def parse2D(func):
-    """
-        Wrapper for 2D manifolds embedding to work
-        with either a Point as argument or a list of floats
-    """
-
-    def inner(p, *args):
-        if isinstance(p, np.ndarray) or isinstance(p, ArrayBox):
-            return func(*p)
-        elif not isinstance(p, Point):
-            return func(p, *args)
-        else:
-            return func(*p.coordinates)
-
-    return inner
-
-
-# ---------------------------------------------------------------------------- #
-#                                    R^N = 3                                   #
-# ---------------------------------------------------------------------------- #
-
-# ----------------------------------- line ----------------------------------- #
-@parse
-def line_to_r3_flat(p):
-    return (p, p, p)
-
-
-@parse
-def line_to_r3(p):
-    return (sin(2 * p) - 0.5, sin(p) * 2 - 1, -cos(p) * 4 + 3)
-
-
-@parse
-def helix_to_r3(p):
-    return (cos(4 * pi * p) / 2, sin(4 * pi * p) / 2, p + 0.25)
-
-
-# ---------------------------------- circle ---------------------------------- #
+# # ----------------------------------- line ----------------------------------- #
 # @parse
-# def circle_to_r3_flat(p):
-#     """
-#         Embedds a circle in 3D but keeping the circle flat in one dimension
-#     """
-#     return (sin(p), cos(p), 1)
+# def line_to_r3_flat(p):
+#     return (p, p, p)
 
 
-@parse
-def circle_to_r3_angled(p):
-    return (sin(p), cos(p), sin(p))
+# @parse
+# def line_to_r3(p):
+#     return (sin(2 * p) - 0.5, sin(p) * 2 - 1, -cos(p) * 4 + 3)
 
 
-@parse
-def circle_to_r3_bent(p):
-    return (sin(p), 0.8 * cos(p), cos(p) ** 2 * 0.5 + 0.5)
+# @parse
+# def helix_to_r3(p):
+#     return (cos(4 * pi * p) / 2, sin(4 * pi * p) / 2, p + 0.25)
 
 
-@parse
-def circle_to_r3(p):
-    return (sin(p), 0.8 * cos(p), cos(p * 2) ** 2 * 0.5 + 0.5)
+# # ---------------------------------- circle ---------------------------------- #
+# # @parse
+# # def circle_to_r3_flat(p):
+# #     """
+# #         Embedds a circle in 3D but keeping the circle flat in one dimension
+# #     """
+# #     return (sin(p), cos(p), 1)
 
 
-# ---------------------------------- sphere ---------------------------------- #
-@parse2D
-def sphere_to_r3(p0, p1):
-    return (sin(p0) * cos(p1), sin(p0) * sin(p1), cos(p0))
+# @parse
+# def circle_to_r3_angled(p):
+#     return (sin(p), cos(p), sin(p))
 
 
-@parse2D
-def ellipse_to_r3(p0, p1):
-    return (sin(p0) * cos(p1) * 0.3, sin(p0) * sin(p1) * 0.3, cos(p0))
+# @parse
+# def circle_to_r3_bent(p):
+#     return (sin(p), 0.8 * cos(p), cos(p) ** 2 * 0.5 + 0.5)
 
 
-# ----------------------------------- plane ---------------------------------- #
-@parse2D
-def plane_to_r3_flat(p0, p1):
-    return (p0 + 0.2, p1 + 0.2, 0.5 * (p0 + p1))
+# @parse
+# def circle_to_r3(p):
+#     return (sin(p), 0.8 * cos(p), cos(p * 2) ** 2 * 0.5 + 0.5)
 
 
-@parse2D
-def plane_to_r3(p0, p1):
-    return (p0, sin(p1) * 2, 0.4 * (p1 - p0) ** 2)
+# # ---------------------------------- sphere ---------------------------------- #
+# @parse2D
+# def sphere_to_r3(p0, p1):
+#     return (sin(p0) * cos(p1), sin(p0) * sin(p1), cos(p0))
 
 
-# ----------------------------------- torus ---------------------------------- #
-@parse2D
-def torus_to_r3(p0, p1):
-    R = 0.75  # torus center -> tube center
-    r = 0.25  # tube radius
-    return (
-        (R + r * cos(p0)) * cos(p1),
-        (R + r * cos(p0)) * sin(p1),
-        r * sin(p0),
-    )
+# @parse2D
+# def ellipse_to_r3(p0, p1):
+#     return (sin(p0) * cos(p1) * 0.3, sin(p0) * sin(p1) * 0.3, cos(p0))
 
 
-@parse2D
-def thin_torus_to_r3(p0, p1):
-    R = 1  # torus center -> tube center
-    r = 0.18  # tube radius
-    return (
-        (R + r * cos(p0)) * cos(p1),
-        (R + r * cos(p0)) * sin(p1),
-        r * sin(p0),
-    )
+# # ----------------------------------- plane ---------------------------------- #
+# @parse2D
+# def plane_to_r3_flat(p0, p1):
+#     return (p0 + 0.2, p1 + 0.2, 0.5 * (p0 + p1))
 
 
-# --------------------------------- cylinder --------------------------------- #
-@parse2D
-def cylinder_to_r3(p0, p1):
-    return (sin(p0) / 2, cos(p0) / 2, p1 + 0.1)
+# @parse2D
+# def plane_to_r3(p0, p1):
+#     return (p0, sin(p1) * 2, 0.4 * (p1 - p0) ** 2)
 
 
-@parse2D
-def cylinder_to_r3_as_cone(p0, p1):
-    k = p1 / 2 + 0.4
-    return (k * sin(p0) / 2, k * cos(p0) / 2, p1 + 0.5)
+# # ----------------------------------- torus ---------------------------------- #
+# @parse2D
+# def torus_to_r3(p0, p1):
+#     R = 0.75  # torus center -> tube center
+#     r = 0.25  # tube radius
+#     return (
+#         (R + r * cos(p0)) * cos(p1),
+#         (R + r * cos(p0)) * sin(p1),
+#         r * sin(p0),
+#     )
+
+
+# @parse2D
+# def thin_torus_to_r3(p0, p1):
+#     R = 1  # torus center -> tube center
+#     r = 0.18  # tube radius
+#     return (
+#         (R + r * cos(p0)) * cos(p1),
+#         (R + r * cos(p0)) * sin(p1),
+#         r * sin(p0),
+#     )
+
+
+# # --------------------------------- cylinder --------------------------------- #
+# @parse2D
+# def cylinder_to_r3(p0, p1):
+#     return (sin(p0) / 2, cos(p0) / 2, p1 + 0.1)
+
+
+# @parse2D
+# def cylinder_to_r3_as_cone(p0, p1):
+#     k = p1 / 2 + 0.4
+#     return (k * sin(p0) / 2, k * cos(p0) / 2, p1 + 0.5)

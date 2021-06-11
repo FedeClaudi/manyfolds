@@ -2,7 +2,6 @@ from dataclasses import dataclass
 import numpy as np
 
 from manifold.topology import Point, Interval, Map
-from manifold.tangent_vector import get_basis_tangent_vector
 
 
 @dataclass
@@ -66,7 +65,7 @@ class BaseFunction:
         if self.embedded is None:
             self.embedd()
 
-        return get_basis_tangent_vector(self.point, self)
+        return self.point.embedding_map.push_forward(self)
 
 
 class BaseFunction2D:
@@ -135,4 +134,4 @@ class BaseFunction2D:
         if self.embedded is None:
             self.embedd()
 
-        return get_basis_tangent_vector(self.point, self,)
+        return self.point.embedding_map.push_forward(self)

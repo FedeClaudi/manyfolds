@@ -3,7 +3,6 @@ import sys
 sys.path.append("./")
 
 from manifold import Plane
-from manifold.tangent_vector import get_basis_tangent_vector
 from manifold import Visualizer
 from manifold.manifolds.embeddings import parse2D
 
@@ -29,7 +28,7 @@ for point in viz.manifold.points:
     pt = point.embedded
     for fn in point.base_functions:
         fn.embedd()
-        vec = get_basis_tangent_vector(point, fn) * 0.25
+        vec = point.embedding_map.push_forward(fn) * 0.25
         viz._render_cylinder([pt, pt + vec], "#000000")
 viz.actors.append(viz.manifold_actor.addShadow(z=0, alpha=0.5))
 

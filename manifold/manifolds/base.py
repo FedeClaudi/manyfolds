@@ -23,7 +23,7 @@ class BaseManifold:
     points_shift = None
 
     _full = True
-    _center_embedding = True
+    _center_embedding = False
 
     def __init__(self, embedding, n_sample_points=10):
         self.embedding = embedding
