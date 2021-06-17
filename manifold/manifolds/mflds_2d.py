@@ -132,6 +132,7 @@ class Plane(Manifold2D):
     )
     _center_embedding = False
     vis_n_points = [30, 30]
+    _full = True
 
     def __init__(self, embedding, n_sample_points=10):
         super().__init__(embedding, n_sample_points=n_sample_points)

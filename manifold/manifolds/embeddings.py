@@ -79,13 +79,13 @@ helix_to_rn = TwoStepsEmbedding("helix to rn", _embeddings.helix_to_r3)
 
 # ---------------------------------- circle ---------------------------------- #
 circle_to_rn_flat = TwoStepsEmbedding(
-    "circle to rn flat", _embeddings.circle_to_r3_angled, scale=3
+    "circle to rn flat", _embeddings.circle_to_r3_angled, scale=2
 )
 circle_to_rn = TwoStepsEmbedding(
-    "circle to rn", _embeddings.circle_to_r3, scale=3
+    "circle to rn", _embeddings.circle_to_r3, scale=2
 )
 circle_to_rn_bent = TwoStepsEmbedding(
-    "circle to rn bent", _embeddings.circle_to_r3_bent, scale=3
+    "circle to rn bent", _embeddings.circle_to_r3_bent, scale=2
 )
 
 
