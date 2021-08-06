@@ -268,10 +268,13 @@ class Visualizer:
         """
         if self.rnn.B is None:
             return
+        raise NotImplementedError
 
         # visualize inputs basis vector
-        colors = make_palette(amber_dark, pink_dark, self.rnn.n_inputs)
-        for base in self.rnn.inputs_basis:
+        n_inputs = self.rnn.B.shape[1]
+        colors = make_palette(amber_dark, pink_dark, n_inputs)
+        for n in range(n_inputs):
+            base = self.rnn.B[:, n]
             for point in self.manifold.points:
                 if self.manifold.n == 3:
                     pt = point.embedded
@@ -337,7 +340,7 @@ class Visualizer:
         x_range=0.05,
         rnn_inputs=None,
         show_tangents=True,
-        show_rnn_inputs_vectors=True,
+        show_rnn_inputs_vectors=False,
         show_manifold=True,
         show_points=True,
         show_basis_vecs=False,
