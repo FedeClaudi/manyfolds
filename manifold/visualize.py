@@ -13,12 +13,10 @@ from vedo import (
 
 from myterial import (
     salmon,
-    green,
     black,
     amber_dark,
     pink_dark,
 )
-from fcutils.plot.figure import clean_axes
 
 from manifold.tangent_vector import (
     get_tangent_vector,

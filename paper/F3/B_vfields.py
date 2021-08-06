@@ -5,14 +5,6 @@ sys.path.append("./")
 from vedo import screenshot
 
 from manifold import embeddings, Plane
-from manifold.manifolds.vectors_fields import (
-    sphere_base,
-    sphere_equator,
-    sphere_poles,
-    sphere_twirl,
-)
-
-from manifold.manifolds._embeddings import parse2D
 from manifold.visualize import Visualizer
 from manifold import visualize
 from manifold.rnn import RNN

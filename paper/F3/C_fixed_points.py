@@ -1,28 +1,17 @@
 import sys
-from numpy import pi, sin, cos
+from numpy import pi, sin
 import numpy as np
 
 sys.path.append("./")
 from vedo import screenshot
-import matplotlib.pyplot as plt
 from vedo.shapes import Tube
 
-from fcutils.plot.figure import clean_axes
 from myterial import salmon
 
 from manifold import embeddings, Plane
-from manifold.manifolds.vectors_fields import (
-    sphere_base,
-    sphere_equator,
-    sphere_poles,
-    sphere_twirl,
-)
-
-from manifold.manifolds._embeddings import parse2D
 from manifold.visualize import Visualizer
 from manifold import visualize
 from manifold.rnn import RNN
-from manifold._visualize import blue_dark
 
 visualize.reco_surface_radius = 0.5
 visualize.point_size = 0.03

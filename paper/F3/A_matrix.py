@@ -1,5 +1,4 @@
 from loguru import logger
-from vedo import screenshot
 
 import matplotlib.pyplot as plt
 from fcutils.plot.figure import clean_axes
@@ -7,11 +6,10 @@ from fcutils.plot.figure import clean_axes
 import sys
 
 sys.path.append("./")
-from manifold import embeddings, Line, Circle, Torus, Sphere, Plane, Cylinder
+from manifold import embeddings, Line, Circle
 from manifold.rnn import RNN
 
-from manifold import vectors_fields
-from manifold import Visualizer
+
 from manifold import visualize
 
 visualize.rnn_trace_alpha = 0.6

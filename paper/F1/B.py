@@ -4,7 +4,6 @@ sys.path.append("./")
 
 from vedo import screenshot
 
-import numpy as np
 from manifold import Plane
 from manifold import Visualizer
 from manifold.manifolds.embeddings import Embedding

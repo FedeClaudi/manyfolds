@@ -9,7 +9,7 @@ import numpy as np
 from fcutils.plot.figure import clean_axes
 from fcutils.plot.elements import plot_mean_and_error
 
-from manifold import embeddings, Line, Circle, Torus, Sphere, Plane, Cylinder
+from manifold import embeddings, Torus, Sphere, Cylinder
 from manifold.rnn import RNN
 from manifold import vectors_fields
 
