@@ -4,6 +4,7 @@ sys.path.append("./")
 import numpy as np
 
 import matplotlib.pyplot as plt
+from fcutils.plot.figure import clean_axes
 
 # from vedo import screenshot
 from myterial import amber_darker, pink_darker, salmon_darker
@@ -22,7 +23,8 @@ visualize.reco_surface_radius = 0.0
 N = 64
 K = 12
 
-trial_n_sec = 600
+trial_n_sec = 120
+B_scale = 5
 
 
 cam = dict(
@@ -37,8 +39,8 @@ cam = dict(
 
 
 def vfield(p):
-    s1 = np.sin(2.5 * np.pi * (p[0] - 0.1)) * 0.2
-    s2 = np.sin(2.5 * np.pi * (p[1] - 0.1)) * 0.2
+    s1 = np.sin(2.5 * np.pi * (p[0] - 0.1)) * 0.6
+    s2 = np.sin(2.5 * np.pi * (p[1] - 0.1)) * 0.6
     return (-s1, -s2)
 
 
@@ -56,8 +58,8 @@ class Embedding:
         v2 -= v2.dot(v1) * v1  # make it orthogonal to k
         v2 /= np.linalg.norm(v2)  # normalize it
 
-        self.v1 = v1 * 4
-        self.v2 = v2 * 4
+        self.v1 = v1
+        self.v2 = v2
 
     def __call__(self, p):
         return (
@@ -75,7 +77,7 @@ def generate_trial():
 
     for i in range(2):
         # ever n sec flip the inputs
-        f = 0.1
+        f = 0.17
         flips = np.random.uniform(1, n_steps - 1, int(f / RNN.dt)).astype(
             np.int32
         )
@@ -107,14 +109,14 @@ M.vectors_field = vfield
 # ---------------------------------- fir RNN --------------------------------- #
 rnn = RNN(M, n_units=N)
 rnn.build_W(k=K, scale=1)
-# rnn.run_points(n_seconds=300, cut=False)
-rnn.B = np.vstack([phi.v1, phi.v2]).T * 4
+rnn.run_points(n_seconds=50, cut=False)
+rnn.B = np.vstack([phi.v1, phi.v2]).T * B_scale
 
 # --------------------------------- visualize -------------------------------- #
 viz = Visualizer(
     M,
     axes=0,
-    # rnn=rnn,
+    rnn=rnn,
     mark_rnn_endpoint=False,
     camera=cam,
     pca_sample_points=30,
@@ -134,8 +136,9 @@ rnn.run_initial_condition(h, n_seconds=trial_n_sec, inputs=inputs, cut=False)
 
 # ---------------------------- readout predictions --------------------------- #
 # predictions = np.apply_along_axis(rnn.B.T.dot, 1, rnn.traces[-1].trace) # / 7
-predictions = np.linalg.pinv(rnn.B) @ rnn.traces[-1].trace.T
-predictions -= predictions[0]
+predictions = np.linalg.pinv(rnn.B / B_scale) @ rnn.traces[-1].trace.T * 2
+predictions[0] -= predictions[0, 0]
+predictions[1] -= predictions[1, 0]
 
 
 # ----------------------------- plot task results ---------------------------- #
@@ -156,11 +159,17 @@ for n, ax in enumerate(axes):
     )
 
     ax.legend()
-    # ax.set(ylim=[-2.2, 4.2])
+    ax.set(
+        ylim=[-2.2, 2.2],
+        xticks=np.arange(0, predictions.shape[1] + 1, 30 / RNN.dt),
+        xticklabels=np.arange(0, trial_n_sec + 1, 30),
+    )
 
-f, ax = plt.subplots()
-ax.scatter(
-    predictions[0, :], predictions[1], c=np.arange(predictions.shape[1])
-)
-ax.set(xlim=[-1, 1], ylim=[-1, 1])
+# f, ax = plt.subplots()
+# ax.scatter(
+#     predictions[0, :], predictions[1], c=np.arange(predictions.shape[1])
+# )
+# ax.set(xlim=[-1, 1], ylim=[-1, 1], )
+clean_axes(f)
 plt.show()
+f.savefig(f"paper/images/3G_task.svg", format="svg")
