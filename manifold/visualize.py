@@ -1,6 +1,7 @@
 from sklearn.decomposition import PCA
 import numpy as np
 from loguru import logger
+import matplotlib.pyplot as plt
 from vedo import (
     Tube,
     recoSurface,
@@ -17,6 +18,7 @@ from myterial import (
     amber_dark,
     pink_dark,
 )
+from fcutils.plot.figure import clean_axes
 
 from manifold.tangent_vector import (
     get_tangent_vector,
@@ -32,6 +34,7 @@ rnn_inputs_radius = 0.02
 tangent_vector_radius = 0.02
 manifold_1d_lw = 12
 manifold_1d_r = 0.015
+rnn_trace_alpha = 1
 
 
 class Visualizer:
@@ -130,7 +133,7 @@ class Visualizer:
         # plot points
         manifold = (
             recoSurface(
-                coordinates, dims=(50, 50, 50), radius=reco_surface_radius
+                coordinates, dims=(75, 75, 75), radius=reco_surface_radius
             )
             .c(self.manifold_color)
             .clean()
@@ -139,7 +142,7 @@ class Visualizer:
         if self.wireframe:
             manifold = manifold.wireframe().lw(2)
         else:
-            self._add_silhouette(manifold)
+            self._add_silhouette(manifold, lw=4)
         self.actors.append(manifold)
         return manifold
 
@@ -164,7 +167,7 @@ class Visualizer:
                         manifold = Cylinder(
                             pos=(0, 0, 0.5),
                             height=1.5,
-                            r=0.5,
+                            r=0.45,
                             axis=(0, 0, -1),
                             c=self.manifold_color,
                         )
@@ -200,9 +203,10 @@ class Visualizer:
 
         self.manifold_actor = manifold.alpha(self.manifold_alpha)
 
-    def visualize_manifold(self):
-        for point in self.manifold.points:
-            self._scatter_point(point)
+    def visualize_manifold(self, show_points=True):
+        if show_points:
+            for point in self.manifold.points:
+                self._scatter_point(point)
         self._draw_manifold()
 
     def visualize_tangent_vectors(self, scale=1, x_range=0.05):
@@ -213,14 +217,6 @@ class Visualizer:
             # draw base functions
             for fn in point.base_functions:
                 fn.embedd(x_range=x_range[fn.dim_idx])
-                # if self.manifold.n == 3:
-                #     coordinates = fn.embedded
-                # else:
-                #     coordinates = self.pca.transform(fn.embedded)
-
-                # mesh = Tube(coordinates, r=0.02, c=(1 - fn.dim_idx * .2) * np.array([.3, .3, .3]),)
-                # self.actors.append(mesh)
-                # self._add_silhouette(mesh, lw=100)
 
             # get tangent vector as sum of basis
             vector = (
@@ -246,11 +242,11 @@ class Visualizer:
                     )
                 else:
                     self._render_cylinder(
-                        [point_lowd, vec_lowd], green, r=tangent_vector_radius
+                        [point_lowd, vec_lowd], "k", r=tangent_vector_radius
                     )
             else:
                 self._render_cylinder(
-                    [point.embedded, vector], green, r=tangent_vector_radius
+                    [point.embedded, vector], "k", r=tangent_vector_radius
                 )
 
     def visualize_basis_vectors_at_point(
@@ -302,7 +298,12 @@ class Visualizer:
             else:
                 coordinates = trace.trace
             self.actors.append(
-                Tube(coordinates, c=salmon, r=rnn_trace_radius,)
+                Tube(
+                    coordinates,
+                    c=salmon,
+                    r=rnn_trace_radius,
+                    alpha=rnn_trace_alpha,
+                )
             )
 
             if self.mark_rnn_endpoint:
@@ -314,6 +315,24 @@ class Visualizer:
                 self._add_silhouette(point)
                 self.actors.append(point)
 
+    def visualize_rnn_weights(self):
+        f, ax = plt.subplots(figsize=(9, 9))
+
+        ax.imshow(self.rnn.W, vmin=-1, vmax=1)
+        ax.set(xlabel="neruon #", ylabel="neuron #")
+
+    def draw_grid_on_manifold(self):
+        act = (
+            self.manifold_actor.clone()
+            .wireframe()
+            .clean()
+            .lc([0.5, 0.5, 0.5])
+            .decimate()
+            .decimate()
+            .clean()
+        )
+        self.actors.append(act)
+
     def show(
         self,
         scale=1,
@@ -323,11 +342,16 @@ class Visualizer:
         show_rnn_inputs_vectors=True,
         show_manifold=True,
         show_points=True,
+        show_basis_vecs=False,
         **kwargs,
     ):
         if self.manifold is not None:
             if show_manifold:
-                self.visualize_manifold()
+                self.visualize_manifold(show_points=show_points)
+                # self.draw_grid_on_manifold()
+
+                # self.manifold_actor.addShadow(z=.1)
+
             elif show_points:
                 for point in self.manifold.points:
                     self._scatter_point(point)
@@ -335,7 +359,14 @@ class Visualizer:
             if show_tangents:
                 self.visualize_tangent_vectors(scale=scale, x_range=x_range)
 
+            if show_basis_vecs:
+                for point in self.manifold.points:
+                    self.visualize_basis_vectors_at_point(
+                        point, scale=0.15, r=0.015
+                    )
+
         if self.rnn is not None:
+            # self.visualize_rnn_weights()
             self.visualize_rnn_traces()
 
             if show_rnn_inputs_vectors:
@@ -344,4 +375,5 @@ class Visualizer:
         for actor in self.actors:
             actor.lighting("off")
 
+        plt.show()
         self.plotter.show(*self.actors, **kwargs)

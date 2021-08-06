@@ -37,8 +37,7 @@ def make_3D_ax(nolim=True):
     ax.grid(False)
     ax.xaxis.pane.set_edgecolor("black")
     ax.yaxis.pane.set_edgecolor("black")
-    ax.zaxis.pane.set_edgecolor("black")
-    ax.xaxis.pane.fill = False
+    ax.zaxis.pane.pane.fill = False
     ax.yaxis.pane.fill = False
     ax.zaxis.pane.fill = False
 

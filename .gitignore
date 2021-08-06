@@ -2,6 +2,9 @@
 .DS_Store
 examples/*.mp4
 tests/*.mp4
+*.png
+*.svg
+archive
 
 .pytest_cache
 __pycache__

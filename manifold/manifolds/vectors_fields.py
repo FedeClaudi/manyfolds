@@ -141,7 +141,7 @@ def sphere_equator(point):
     """
     cos = np.cos(point.coordinates[0])
     cos2 = np.cos(2 * point.coordinates[0])
-    return (cos * 0.8, (1 - cos2) * 0.4)
+    return (cos * 0.4, (1 - cos2) * 0.2)
 
 
 @sel_args
@@ -149,7 +149,9 @@ def sphere_poles(point):
     """
         Pushes the dynamics towards the poles of the sphere
     """
-    return (-np.cos(point.coordinates[0]) * 0.8, 0)
+    cos = np.cos(point.coordinates[0])
+    sign = np.sign(cos)
+    return (-sign * 0.3, 0)
 
 
 @sel_args
@@ -157,7 +159,9 @@ def sphere_base(point):
     """
         Pushes the dynamics towards the poles of the sphere
     """
-    return (-np.cos(point.coordinates[0]) * 0.5, 0.25)
+    scale = 1.5 - abs(np.cos(point.coordinates[0]))
+    vec = np.array((-np.cos(point.coordinates[0]) * 0.5, 0.25))
+    return tuple(vec * scale)
 
 
 @sel_args
@@ -166,6 +170,16 @@ def sphere_base2(point):
         Pushes the dynamics towards the poles of the sphere
     """
     return (0.25, -np.cos(2 * point.coordinates[1]))
+
+
+@sel_args
+def sphere_twirl(point):
+    """
+        Pushes the dynamics towards the poles of the sphere
+    """
+    scale = 1.3 - abs(np.cos(point.coordinates[0]))
+
+    return tuple(np.array((0.25, 0.25)) * scale)
 
 
 # ----------------------------------- torus ---------------------------------- #

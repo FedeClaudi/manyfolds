@@ -23,9 +23,8 @@ class Embedding:
 
 
 class TwoStepsEmbedding:
-    N = 64
-
-    def __init__(self, name, phi_1, scale=1):
+    def __init__(self, name, phi_1, scale=1, N=64):
+        self.N = N
         self.name = name
         self.mtx = ortho_normal_matrix(self.N, 3)
         self.phi_1 = phi_1
@@ -48,6 +47,9 @@ circle_to_r3_flat = Embedding(
 )
 circle_to_r3 = Embedding("circle to R3", _embeddings.circle_to_r3_bent)
 circle_to_r3_curvy = Embedding("circle to R3 curvy", _embeddings.circle_to_r3)
+circle_to_r3_bent = Embedding(
+    "circle to R3 curvy", _embeddings.circle_to_r3_bent
+)
 
 # ---------------------------------- sphere ---------------------------------- #
 sphere_to_r3 = Embedding("sphere to R3", _embeddings.sphere_to_r3)
@@ -90,7 +92,9 @@ circle_to_rn_bent = TwoStepsEmbedding(
 
 
 # ---------------------------------- sphere ---------------------------------- #
-sphere_to_rn = TwoStepsEmbedding("sphere to rn", _embeddings.sphere_to_r3)
+sphere_to_rn = TwoStepsEmbedding(
+    "sphere to rn", _embeddings.sphere_to_r3, scale=1
+)
 ellipse_to_rn = TwoStepsEmbedding("ellipse to rn", _embeddings.ellipse_to_r3)
 
 # ---------------------------------- plane ---------------------------------- #

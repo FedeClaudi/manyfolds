@@ -141,4 +141,4 @@ def cylinder_to_r3(p0, p1):
 @parse2D
 def cylinder_to_r3_as_cone(p0, p1):
     k = p1 / 2 + 0.4
-    return (k * sin(p0) / 2, k * cos(p0) / 2, p1 + 0.5)
+    return (k * sin(p0) / 2, k * cos(p0) / 2, p1 + 0.1)
