@@ -14,7 +14,7 @@ from manifold.maps import (
     smul_pi_inverse,
 )
 from manifold.base_function import BaseFunction
-from manifold.manifolds.base import BaseManifold
+from manifold.manifolds.manifold import BaseManifold
 
 
 class Manifold1D(BaseManifold):

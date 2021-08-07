@@ -3,14 +3,14 @@ from loguru import logger
 from dataclasses import dataclass
 from rich.progress import track
 
-from manifold.maths import unit_vector
 from manifold.tangent_vector import get_tangent_vector
 
 
+# ------------------------------ helper classes ------------------------------ #
 @dataclass
 class Trace:
     """
-        Stores the results of running the RNN on one initial condition
+        Stores a trace of the RNN's hidden state over a simulation
     """
 
     initial_condition: np.ndarray
@@ -20,15 +20,11 @@ class Trace:
         return len(self.trace)
 
 
-@dataclass
-class InputsBase:
-    idx: int
-    vec: np.ndarray
-    projected: np.ndarray  # Bu -> basis vec projected in state space
-
-
+# ---------------------------------------------------------------------------- #
+#                                      RNN                                     #
+# ---------------------------------------------------------------------------- #
 class RNN:
-    dt = 0.05
+    dt = 0.05  # simulation dt
 
     traces = []  # stores results of runnning RNN on initial conditions
     B = None  # place holder for connections matrix
@@ -57,58 +53,6 @@ class RNN:
         # noise_x = np.random.normal(0, 1e-10, size=X.shape)
         noise = np.random.randn(*Y.shape) * 1e-6
         return X @ (Y + noise)
-
-    def build_B(self, k=10, vector_fields=None):
-        """
-            Builds the input connectivity matrix B for the RNN by
-            enforcing that any imput vector u results in a vector
-            tangent to the manifold when multiplied by B.
-
-            Arguments:
-                k: int. Number of sample points to use.
-                vector_fields: list. List of functions mapping points on the manifolds
-                    to elements of the tangent vector spce at that point.
-        """
-        if vector_fields is not None:
-            if (
-                isinstance(vector_fields, list)
-                and len(vector_fields) != self.n_inputs
-            ):
-                raise ValueError(
-                    "When passing vector fields to build_B you need as manu fields as there are inputs to the RNN"
-                )
-            elif not isinstance(vector_fields, list):
-                vector_fields = [vector_fields] * self.n_inputs
-
-        points = self.manifold.sample(n=k - 1, fill=True, full=True)
-
-        # standard basis of inputs vector space Rq
-        basis = np.eye(self.n_inputs)
-        inputs = []  # stroes inputs vectors
-        tangents = []  # stores tangent vectors Bu
-        for point in points:
-            for idx in range(self.n_inputs):
-                # get vectors field
-                if vector_fields is not None:
-                    vfield = vector_fields[idx]
-                else:
-                    vfield = None
-
-                # get a vector tangent to the manifold
-                tangents.append(
-                    get_tangent_vector(point, vectors_field=vfield)
-                )
-
-                # get the basis vector
-                inputs.append(basis[:, idx])
-
-        # solve for B
-        self.B = self._solve_eqs_sys(tangents, inputs)
-        logger.debug(f"RNN input matrix shape: {self.B.shape}")
-        self.inputs_basis = [
-            InputsBase(n, basis[:, n], unit_vector(self.B.dot(basis[:, n])))
-            for n in range(self.n_inputs)
-        ]
 
     def build_W(self, k=10, scale=1):
         """

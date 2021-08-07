@@ -7,7 +7,7 @@ from manifold.topology import Point, Manifold, Map, Chart, Interval
 from manifold.base_function import BaseFunction2D
 from manifold import maps
 from manifold.maps import identity
-from manifold.manifolds.base import BaseManifold
+from manifold.manifolds.manifold import BaseManifold
 from manifold.maths import cartesian_product
 
 

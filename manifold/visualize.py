@@ -14,15 +14,18 @@ from vedo import (
 from myterial import (
     salmon,
     black,
-    amber_dark,
-    pink_dark,
 )
 
 from manifold.tangent_vector import (
     get_tangent_vector,
     get_basis_tangent_vector,
 )
-from manifold._visualize import make_palette
+
+
+"""
+    Code to create visualizations of embedded manifold, tangent vectors and 
+    RNN dynamics in PCA space.
+"""
 
 # settings
 point_size = 0.05
@@ -262,32 +265,6 @@ class Visualizer:
                 vec = pt + vec
             self._render_cylinder([pt, vec], color, r=r)
 
-    def visualize_rnn_inputs(self, scale=1, rnn_inputs=None):
-        """
-            Plots the basis vectors of the RNN's inputs vectors space
-        """
-        if self.rnn.B is None:
-            return
-        raise NotImplementedError
-
-        # visualize inputs basis vector
-        n_inputs = self.rnn.B.shape[1]
-        colors = make_palette(amber_dark, pink_dark, n_inputs)
-        for n in range(n_inputs):
-            base = self.rnn.B[:, n]
-            for point in self.manifold.points:
-                if self.manifold.n == 3:
-                    pt = point.embedded
-                    vec = point.embedded + base.projected * scale
-                else:
-                    pt = self.pca.transform(point.embedded.reshape(1, -1))[0]
-                    vec = point.embedded + base.projected * scale
-                    vec = self.pca.transform(vec.reshape(1, -1))[0]
-                self._render_cylinder(
-                    [pt, vec], colors[base.idx], r=rnn_inputs_radius,
-                )
-                # break
-
     def visualize_rnn_traces(self):
         for trace in self.rnn.traces:
             if self.manifold.n > 3:
@@ -315,12 +292,6 @@ class Visualizer:
                 )
                 self._add_silhouette(point)
                 self.actors.append(point)
-
-    def visualize_rnn_weights(self):
-        f, ax = plt.subplots(figsize=(9, 9))
-
-        ax.imshow(self.rnn.W, vmin=-1, vmax=1)
-        ax.set(xlabel="neruon #", ylabel="neuron #")
 
     def draw_grid_on_manifold(self):
         act = (

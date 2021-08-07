@@ -3,6 +3,10 @@ from loguru import logger
 
 from manifold.maths import unit_vector
 
+"""
+    Functions to compute tangent vectors
+"""
+
 
 def take_derivative_at_point(arr, idx):
     """

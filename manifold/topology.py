@@ -2,6 +2,11 @@ import numpy as np
 from dataclasses import dataclass
 from typing import Callable, Union
 
+"""
+    Dataclasses to represent quantities of interest such a point, 
+    an interval, chart, manifold...
+"""
+
 
 @dataclass
 class Point:

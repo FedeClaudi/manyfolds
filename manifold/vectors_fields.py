@@ -130,10 +130,6 @@ def sin_on_sphere(point):
     return (np.sin(2 * point[0]), 0)
 
 
-# ---------------------------------------------------------------------------- #
-#                                    custom                                    #
-# ---------------------------------------------------------------------------- #
-# ---------------------------------- sphere ---------------------------------- #
 @sel_args
 def sphere_equator(point):
     """
@@ -182,7 +178,6 @@ def sphere_twirl(point):
     return tuple(np.array((0.25, 0.25)) * scale)
 
 
-# ----------------------------------- torus ---------------------------------- #
 def torus_base(point):
     return (point[0], np.sin(2 * point[1]))
 
@@ -195,15 +190,5 @@ def torus_second(point):
     return (0, np.cos(point[0] * 2))
 
 
-# @sel_args
-# def torus_first(point):
-#     return (np.sin(2 * point[0]), 0)
-
-
-# @sel_args
-# def torus_second(point):
-#     return (0, np.sin(2 * point[1]))
-
-# --------------------------------- cylinder --------------------------------- #
 def cylinder_vfield(point):
     return (np.sin(point[1] * pi * 0.5) + 0.1, 0)

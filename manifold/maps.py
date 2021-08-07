@@ -1,23 +1,17 @@
 from numpy import pi
 
-# -------------------------------- decorators -------------------------------- #
+from manifold.decorators import return_many
 
 
-def return_many(func):
-    def inner(*args):
-        out = func(*args)
-        if len(out) == 1:
-            return out[0]
-        else:
-            return out
-
-    return inner
+"""
+    Various types of mathematical functions (maps).
+    For use as chart maps or basis functions.
+"""
 
 
-# --------------------------------- addition --------------------------------- #
 def addition(k, *args):
     """
-        Base functionfor addition maps
+        Base function for addition maps
     """
     out = []
     for x in args:
@@ -51,7 +45,6 @@ def subtract_pi_inverse(*args):
     return addition(+pi, *args)
 
 
-# ------------------------------ multiplications ----------------------------- #
 def scalar_multiplication(k, *args):
     """
         Base function for scalar multiplication maps
@@ -101,7 +94,6 @@ def smul_2pi_inverse(*args):
     return scalar_multiplication(1 / (2 * pi), *args)
 
 
-# ---------------------------------- sphere ---------------------------------- #
 @return_many
 def sphere_U_2(x):
     x0 = x[0] / pi
@@ -118,7 +110,6 @@ def sphere_U_2_inverse(x):
     return x
 
 
-# ----------------------------------- torus ---------------------------------- #
 @return_many
 def torus_U_1(x):
     x0 = x[0] / pi
@@ -151,7 +142,6 @@ def torus_U_2_inverse(x):
     return x
 
 
-# --------------------------------- cylinder --------------------------------- #
 @return_many
 def cylinder_U_1(x):
     x1 = x[1]

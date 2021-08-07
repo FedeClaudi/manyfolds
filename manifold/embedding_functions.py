@@ -1,47 +1,10 @@
 from numpy import sin, cos, pi
-import numpy as np
 
-from manifold.topology import Point
+from manifold.decorators import parse, parse2D
 
-# --------------------------------- wrappers --------------------------------- #
-
-
-def parse(func):
-    """
-        Wrapper for 1D manifolds embedding to work
-        with either a single float or a Point
-        of 1 coordinate
-    """
-
-    def inner(*args):
-        if len(args) == 1:
-            p = args[0]
-
-            if not isinstance(p, float):
-                p = p[0]
-            return func(p)
-        else:
-            return func(*args)
-
-    return inner
-
-
-def parse2D(func):
-    """
-        Wrapper for 2D manifolds embedding to work
-        with either a Point as argument or a list of floats
-    """
-
-    def inner(p, *args):
-        if isinstance(p, np.ndarray):
-            return func(*p)
-        elif not isinstance(p, Point):
-            return func(p, *args)
-        else:
-            return func(*p.coordinates)
-
-    return inner
-
+"""
+    This scripts defines commonly used embedding functions \\phi.
+"""
 
 # ---------------------------------------------------------------------------- #
 #                                    R^N = 3                                   #
