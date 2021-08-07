@@ -1,61 +1,99 @@
+from loguru import logger
 import sys
 
 sys.path.append("./")
-
+from manifold import embeddings, Line, Circle, Torus, Sphere, Plane, Cylinder
 from vedo import screenshot
 
-import numpy as np
-from manifold import Plane
+from manifold import vectors_fields
 from manifold import Visualizer
-from manifold.manifolds.embeddings import Embedding
-from manifold.manifolds._embeddings import parse2D
-import manifold
 
-manifold.visualize.reco_surface_radius = 0.05
-manifold.visualize.point_size = 0.035
+# --------------------------------- settings --------------------------------- #
+MANIFOLD = "plane"
+N = 64
+K = 12
 
-"""
-    Visualize two differently oriented manifolds with tangent vecors
-"""
+# ---------------------------------------------------------------------------- #
+#                          select manifold parameters                          #
+# ---------------------------------------------------------------------------- #
+# get manifold
+if MANIFOLD == "line":
+    logger.debug("Line manifold")
+    M = Line(embeddings.line_to_rn, n_sample_points=1)
+    pca_sample_points = 50
+
+    if K > 6:
+        logger.warning("Line manifold prefers K = 6")
+
+elif MANIFOLD == "helix":
+    logger.debug("helix manifold")
+    M = Line(embeddings.helix_to_rn, n_sample_points=4)
+    pca_sample_points = 150
+
+    if K > 12 or K < 8:
+        logger.warning("Helix manifold prefers K = 10")
+
+elif MANIFOLD == "circle":
+    logger.debug("Circle manifold")
+    M = Circle(embeddings.circle_to_rn, n_sample_points=6)
+    pca_sample_points = 50
+    # M.vectors_field = vectors_fields.double_sin
+
+elif MANIFOLD == "torus":
+    logger.debug("Torus manifold")
+    M = Torus(embeddings.torus_to_rn, n_sample_points=[8, 4])
+    pca_sample_points = 50
+    M.vectors_field = vectors_fields.second_only
 
 
-@parse2D
-def _curvy_plane_3d(p0, p1):
-    return (
-        p0,
-        p1,
-        0.3
-        - np.sin(1.5 * np.pi * p0)
-        * np.sin(1.5 * np.pi * p1)
-        * (0.35 - 0.3 * p0),
+elif MANIFOLD == "sphere":
+
+    logger.debug("Sphere manifold")
+    M = Sphere(embeddings.sphere_to_rn, n_sample_points=[4, 4])
+    pca_sample_points = 75
+
+    M.vectors_field = vectors_fields.sphere_equator
+
+    if K != 12:
+        logger.warning("Sphere manifold prefers K = 12")
+
+elif MANIFOLD == "cylinder":
+    logger.debug("Cylinder manifold")
+    M = Cylinder(
+        embeddings.prepare_cylinder_to_rn(n=N), n_sample_points=[3, 4]
     )
+    pca_sample_points = 60
+
+    M.vectors_field = vectors_fields.cylinder_vfield
 
 
-plane_3d_embedding = Embedding("plane 3d", _curvy_plane_3d)
-M = Plane(plane_3d_embedding, n_sample_points=8)
-M.points = [M.points[33]]
+elif MANIFOLD == "cone":
+    logger.debug("Cylinder manifold")
+    M = Cylinder(
+        embeddings.prepare_cylinder_as_cone_to_rn(n=N), n_sample_points=[3, 4]
+    )
+    pca_sample_points = 60
+
+    M.vectors_field = vectors_fields.first_only
+
+elif MANIFOLD == "plane":
+    logger.debug("Plane manifold")
+    M = Plane(embeddings.plane_to_rn, n_sample_points=[2, 2])
+    pca_sample_points = 80
+
+    # M.vectors_field = vectors_fields.second_only
+
+else:
+    raise NotImplementedError
 
 
-viz = Visualizer(M, manifold_alpha=1, wireframe=False)
+# ---------------------------------------------------------------------------- #
+#                              stuff happens here                              #
+# ---------------------------------------------------------------------------- #
+M.print_embedding_bounds()
 
 
-cam = dict(
-    pos=(-0.415, -2.10, 0.600),
-    focalPoint=(0.547, 0.445, 0.311),
-    viewup=(0.0426, 0.0970, 0.994),
-    distance=2.74,
-    clippingRange=(1.16, 4.72),
-)
-
-viz.show(
-    x_range=[0.1, 0.2],
-    scale=0.2,
-    show_basis_vecs=False,
-    show_tangents=False,
-    show_points=False,
-    axes=0,
-    camera=cam,
-)
-
+viz = Visualizer(M, pca_sample_points=pca_sample_points)
+viz.show(x_range=[0.1, 0.2], scale=0.2)
 
 screenshot("paper/images/F2A.png")

@@ -44,7 +44,7 @@ def vfield_three(point):
 
 
 vector_fields = (vfield_one, vfield_two, vfield_three)
-V = 1
+V = 0
 
 M = Plane(embeddings.plane_to_rn_flat, n_sample_points=12)
 M.vectors_field = vector_fields[V]
@@ -75,5 +75,5 @@ for trace in rnn.traces:
     viz._add_silhouette(tube)
 
 # show vector field
-viz.show(scale=0.15, show_points=True, cam=cam)
+viz.show(scale=0.15, show_points=True, camera=cam)
 screenshot(f"./paper/images/3C_vfield_{V}.png")

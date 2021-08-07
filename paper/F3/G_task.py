@@ -110,6 +110,7 @@ M.vectors_field = vfield
 rnn = RNN(M, n_units=N)
 rnn.build_W(k=K, scale=1)
 rnn.run_points(n_seconds=50, cut=False)
+
 rnn.B = np.vstack([phi.v1, phi.v2]).T * B_scale
 
 # --------------------------------- visualize -------------------------------- #

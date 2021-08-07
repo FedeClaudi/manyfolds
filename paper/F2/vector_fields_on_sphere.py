@@ -26,7 +26,7 @@ def embedding_one(p0, p1):
 
 
 vector_fields = (sphere_base, sphere_equator, sphere_poles, sphere_twirl)
-V = 3
+V = 2
 
 
 M = Sphere(embeddings.sphere_to_rn, n_sample_points=[14, 20])
