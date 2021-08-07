@@ -14,6 +14,10 @@ from manifold import visualize
 visualize.rnn_trace_alpha = 0.6
 visualize.reco_surface_radius = 0.1
 
+"""
+    Plot the dynamics of RNN fitted to differernt manifolds with different vector fields
+"""
+
 # --------------------------------- settings --------------------------------- #
 MANIFOLD = "cylinder"
 N = 64

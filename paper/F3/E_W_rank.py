@@ -12,6 +12,12 @@ from manifold.manifolds._embeddings import parse, helix_to_r3
 
 from manifold.rnn import RNN
 
+
+"""
+    Plots the rank of RNNs fitted to the line with different
+    embedding maps.
+"""
+
 plt.rc("text", usetex=True)
 plt.rc("font", family="serif")
 plt.rcParams.update(

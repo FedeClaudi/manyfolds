@@ -5,12 +5,12 @@ sys.path.append("./")
 from vedo import screenshot
 
 import numpy as np
-from manifold import Plane
-from manifold import Visualizer
-from manifold.manifolds.embeddings import Embedding
-from manifold.manifolds._embeddings import parse2D
-import manifold
 
+
+from manifold import Plane, Visualizer
+from manifold._embeddings import Embedding
+from manifold.decorators import parse2D
+import manifold
 
 manifold.visualize.reco_surface_radius = 0.05 * 3
 manifold.visualize.point_size = 0.035
@@ -29,7 +29,7 @@ def _curvy_plane_3d(p0, p1):
         - np.sin(1.5 * np.pi * p0)
         * np.sin(1.5 * np.pi * p1)
         * (0.35 - 0.3 * p0)
-        * 0.1,
+        * 3,
     )
 
 
@@ -49,11 +49,11 @@ viz = Visualizer(M, manifold_alpha=1, wireframe=False)
 
 
 cam = dict(
-    pos=(1.5, 1.5, 8.01),
-    focalPoint=(1.45, 1.35, -0.577),
-    viewup=(0, -1.00, 0),
-    distance=8.59,
-    clippingRange=(7.22, 8.36),
+    pos=(0.596, -5.06, 2.41),
+    focalPoint=(1.46, 0.435, 0.511),
+    viewup=(0.100, 0.311, 0.945),
+    distance=5.87,
+    clippingRange=(2.97, 12.0),
 )
 
 viz.show(
@@ -67,4 +67,4 @@ viz.show(
 )
 
 
-screenshot("paper/images/D.png")
+screenshot("paper/images/C.png")

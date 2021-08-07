@@ -1,5 +1,4 @@
 import sys
-from numpy import pi, sin
 import numpy as np
 
 sys.path.append("./")
@@ -13,6 +12,13 @@ from manifold.visualize import Visualizer
 from manifold import visualize
 from manifold.rnn import RNN
 
+
+"""
+    3D viisualizatoin of an RNN's dynamics over time fitted
+    to the plane with a single fixed point attractor
+    at the center.
+"""
+
 visualize.reco_surface_radius = 0.5
 visualize.point_size = 0.03
 visualize.tangent_vector_radius = 0.015
@@ -23,31 +29,14 @@ N = 64
 K = 12
 
 
-def vfield_one(point):
+def vfield(point):
     # fixed point at center
     p0, p1 = point.coordinates
     return ((0.5 - p0) * 3, (0.5 - p1) * 3)
 
 
-def vfield_two(point):
-    # four fixed points at corners
-    p0, p1 = point.coordinates
-    p0, p1 = p0 - 0.5, p1 - 0.5
-    return (sin(2.5 * pi * p0) * 0.3, sin(pi * p1 * 2.5) * 0.3)
-
-
-def vfield_three(point):
-    # more fixed points
-    p0, p1 = point.coordinates
-    p0, p1 = p0 - 0.5, p1 - 0.5
-    return (sin(4 * pi * p0) * 0.3, sin(pi * p1 * 2.5) * 0.3)
-
-
-vector_fields = (vfield_one, vfield_two, vfield_three)
-V = 0
-
 M = Plane(embeddings.plane_to_rn_flat, n_sample_points=12)
-M.vectors_field = vector_fields[V]
+M.vectors_field = vfield
 
 
 # fit and run RNN
@@ -76,4 +65,4 @@ for trace in rnn.traces:
 
 # show vector field
 viz.show(scale=0.15, show_points=True, camera=cam)
-screenshot(f"./paper/images/3C_vfield_{V}.png")
+screenshot(f"./paper/images/3D_vfield_.png")

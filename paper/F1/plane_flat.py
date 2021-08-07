@@ -4,10 +4,9 @@ sys.path.append("./")
 
 from vedo import screenshot
 
-from manifold import Plane
-from manifold import Visualizer
-from manifold.manifolds.embeddings import Embedding
-from manifold.manifolds._embeddings import parse2D
+from manifold import Plane, Visualizer
+from manifold._embeddings import Embedding
+from manifold.decorators import parse2D
 import manifold
 
 manifold.visualize.reco_surface_radius = 0.025

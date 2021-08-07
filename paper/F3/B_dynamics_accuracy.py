@@ -9,10 +9,14 @@ import numpy as np
 from fcutils.plot.figure import clean_axes
 from fcutils.plot.elements import plot_mean_and_error
 
-from manifold import embeddings, Torus, Sphere, Cylinder
+from manifold import embeddings, Sphere, Cylinder
 from manifold.rnn import RNN
 from manifold import vectors_fields
 
+"""
+    Fits RNNs two different manifolds and estimates the drift from the
+    manifold's surface
+"""
 
 plt.rc("text", usetex=True)
 plt.rc("font", family="serif")
@@ -40,7 +44,7 @@ def register_in_time(trials, n_samples):
 
 
 # --------------------------------- settings --------------------------------- #
-MANIFOLDS = ("cylinder", "torus", "sphere")
+MANIFOLDS = ("cylinder", "sphere")
 N = 64
 K = 12
 n_sec = 150  # max n sec, each trace is only used until it goes back to the starting point
@@ -58,8 +62,7 @@ for manifold, color in zip(MANIFOLDS, colors):
         M = Cylinder(embeddings.cylinder_to_rn, n_sample_points=5)
         M.vectors_field = vectors_fields.first_only
     else:
-        M = Torus(embeddings.torus_to_rn, n_sample_points=5)
-        M.vectors_field = vectors_fields.second_only
+        raise ValueError("Invalid manifold " + manifold)
 
     origin_distances = []  # store distance from origin for each RNN trace
     for repeat in range(N_repeats):

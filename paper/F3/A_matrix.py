@@ -15,6 +15,10 @@ from manifold import visualize
 visualize.rnn_trace_alpha = 0.6
 visualize.reco_surface_radius = 0.1
 
+"""
+    Plots the connectivity matrix of networks fitted to different manifolds. 
+"""
+
 # --------------------------------- settings --------------------------------- #
 MANIFOLD = "helix"
 N = 64

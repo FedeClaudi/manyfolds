@@ -8,7 +8,7 @@ from myterial import pink
 
 from manifold.topology import Point, Map
 from manifold.maps import identity
-from manifold.manifolds import vectors_fields
+from manifold import vectors_fields
 
 
 class BaseManifold:

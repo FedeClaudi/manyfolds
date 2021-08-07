@@ -29,7 +29,7 @@ from manifold.tangent_vector import (
 
 # settings
 point_size = 0.05
-reco_surface_radius = 0.3
+reco_surface_radius = 0.1
 rnn_trace_radius = 0.03
 rnn_inputs_radius = 0.02
 tangent_vector_radius = 0.02

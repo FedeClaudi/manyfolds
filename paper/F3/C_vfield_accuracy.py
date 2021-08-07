@@ -15,6 +15,11 @@ from manifold.rnn import RNN
 from manifold.tangent_vector import get_tangent_vector
 from manifold.maths import angle_between
 
+"""
+    Fits RNNs to the Plane with different vector fields and 
+    estimates the angular 'error' between the dynamics vector
+    and the vector field angle. 
+"""
 
 N = 64
 K = 12

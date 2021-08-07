@@ -20,6 +20,10 @@ visualize.rnn_trace_alpha = 0.8
 visualize.reco_surface_radius = 0.0
 
 
+"""
+    2 bit memory task and RNN implementation.
+"""
+
 N = 64
 K = 12
 
