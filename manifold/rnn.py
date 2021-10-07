@@ -27,7 +27,6 @@ class RNN:
     dt = 0.05  # simulation dt
 
     traces = []  # stores results of runnning RNN on initial conditions
-    B = None  # place holder for connections matrix
 
     def __init__(self, manifold=None, n_units=3, n_inputs=None):
         """

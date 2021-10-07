@@ -14,7 +14,7 @@ from manifold.rnn import RNN
 
 
 """
-    3D viisualizatoin of an RNN's dynamics over time fitted
+    3D viisualization of an RNN's dynamics over time fitted
     to the plane with a single fixed point attractor
     at the center.
 """

@@ -28,14 +28,6 @@ M.points = [M.points[33]]
 
 
 viz = Visualizer(M, manifold_alpha=1, wireframe=False)
-
-
-# cam = dict(pos=(-0.415, -2.10, 0.600),
-#            focalPoint=(0.547, 0.445, 0.311),
-#            viewup=(0.0426, 0.0970, 0.994),
-#            distance=2.74,
-#            clippingRange=(1.16, 4.72))
-
 viz.show(
     x_range=[0.1, 0.2],
     scale=0.2,
